@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import LinkedInSkills from "./LinkedInSkills";
 
 const skillMetrics = [
   { value: "24", label: "Demonstrated skills", tone: "green" },
@@ -103,6 +104,8 @@ export default function SkillsExplorerPage() {
           ))}
         </div>
 
+        <LinkedInSkills />
+
         <div className="skills-layout">
           <div className="skills-grid-panel">
             <div className="skills-heading-row">
@@ -187,8 +190,9 @@ export default function SkillsExplorerPage() {
         </div>
 
         <p className="skills-note">
-          Skills are inferred from available public repository evidence. You can
-          review and edit suggestions.
+          Repository skills are inferred from available public evidence.
+          LinkedIn profile skills are imported from text you provide and saved
+          in this browser.
         </p>
       </main>
     </section>
