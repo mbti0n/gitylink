@@ -5,6 +5,7 @@ import BeatCat from "@/components/BeatCat";
 import GitHubContributionGraph from "@/components/GitHubContributionGraph";
 import RepositoryAlbumArt from "@/components/RepositoryAlbumArt";
 import Reveal from "@/components/Reveal";
+import ProfileSoundSummary from "./ProfileSoundSummary";
 import { getGitHubContributionCalendar } from "@/lib/github-contributions";
 import { getGitHubProfile } from "@/lib/github-profile";
 import { getGitHubRepositories } from "@/lib/github-repositories";
@@ -113,6 +114,10 @@ async function LibraryOverview() {
             </div>
           </article>
         </section>
+      </Reveal>
+
+      <Reveal>
+        <ProfileSoundSummary hasRepositories={Boolean(repositories?.length)} />
       </Reveal>
 
       <Reveal>
