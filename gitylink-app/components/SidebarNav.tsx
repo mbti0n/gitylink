@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
   { href: "/repositories", icon: "▣", label: "Repositories" },
   { href: "/insights", icon: "◒", label: "Repo Insights" },
   { href: "/skills", icon: "♫", label: "Repo Rhythm" },
+  { href: "/wrapped", icon: "✦", label: "Repo Wrapped" },
   { href: "/rhythm", icon: "♪", label: "Rhythm Arcade" },
 ];
 

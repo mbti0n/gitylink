@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import type { GitHubMoodProfile } from "@/lib/github-mood";
 
 type RhythmTrack = {
@@ -273,9 +274,11 @@ function scheduleTrack(context: AudioContext, destination: AudioNode, track: Rhy
 type Props = {
   // undefined while the profile loads, null when GitHub isn't connected
   moodProfile?: GitHubMoodProfile | null;
+  // Set when arriving from Repo Wrapped's "Play my mood": compose a beat right away
+  autoCompose?: boolean;
 };
 
-export default function RhythmGame({ moodProfile }: Props) {
+export default function RhythmGame({ moodProfile, autoCompose = false }: Props) {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [mode, setMode] = useState<GameMode>("idle");
   const [track, setTrack] = useState<RhythmTrack | null>(null);
@@ -611,6 +614,16 @@ export default function RhythmGame({ moodProfile }: Props) {
     };
   }, [mode, pressLane, releaseLane, setLanePressed]);
 
+  // Arriving from Repo Wrapped composes the mood beat once; the URL is cleaned up so a
+  // refresh doesn't spend another generation
+  const autoComposedRef = useRef(false);
+  useEffect(() => {
+    if (!autoCompose || autoComposedRef.current) return;
+    autoComposedRef.current = true;
+    window.history.replaceState(null, "", "/rhythm");
+    void composeTrack();
+  });
+
   // Wrapped-style "thinking" phrases cycle while the AI composes
   useEffect(() => {
     if (mode !== "composing" || !moodProfile) return;
@@ -666,20 +679,26 @@ export default function RhythmGame({ moodProfile }: Props) {
       </header>
 
       {moodProfile ? (
-        <MoodWrapped
-          mood={moodProfile}
-          hasTrack={Boolean(track)}
-          disabled={mode === "composing" || mode === "playing"}
-          onGenerate={() => void composeTrack()}
-        />
+        <div className="rhythm-mood-banner">
+          <div>
+            <p className="record-eyebrow">Tuned to your Repo Wrapped mood</p>
+            <strong>{moodProfile.archetype}</strong>
+            <span>
+              {moodProfile.genre} · {moodProfile.bpmMin}–{moodProfile.bpmMax} BPM
+            </span>
+          </div>
+          <Link href="/wrapped" className="record-text-link">
+            See your Wrapped <span aria-hidden="true">→</span>
+          </Link>
+        </div>
       ) : moodProfile === null ? (
         <p className="rhythm-mood-hint">
-          Connect GitHub on the overview page and every beat will be tuned to your coding year.
+          Connect GitHub on the overview page and every beat will be tuned to your Repo Wrapped mood.
         </p>
       ) : (
-        <div className="rhythm-wrapped is-loading" aria-live="polite">
-          Reading your GitHub year…
-        </div>
+        <p className="rhythm-mood-hint" aria-live="polite">
+          Reading your GitHub mood…
+        </p>
       )}
 
       <section className="rhythm-console" aria-label="Rhythm game">
@@ -915,76 +934,4 @@ function closeAudioContext(context: AudioContext) {
   void context.close().catch((closeError: unknown) => {
     console.error("Could not close rhythm game audio.", closeError);
   });
-}
-
-type MoodWrappedProps = {
-  mood: GitHubMoodProfile;
-  hasTrack: boolean;
-  disabled: boolean;
-  onGenerate: () => void;
-};
-
-// Spotify Wrapped-style deck: one GitHub stat per card, ending on the coding mood that sets the beat
-function MoodWrapped({ mood, hasTrack, disabled, onGenerate }: MoodWrappedProps) {
-  const [index, setIndex] = useState(0);
-  const lastIndex = mood.cards.length - 1;
-  const card = mood.cards[Math.min(index, lastIndex)];
-
-  // Auto-advance like a story, stopping on the final mood card
-  useEffect(() => {
-    if (index >= lastIndex) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setTimeout(() => setIndex((current) => current + 1), 4200);
-    return () => window.clearTimeout(timer);
-  }, [index, lastIndex]);
-
-  return (
-    <section className={`rhythm-wrapped tone-${index % 4}`} aria-label={`Your GitHub mood, @${mood.login}`}>
-      <div className="rhythm-wrapped-progress" aria-hidden="true">
-        {mood.cards.map((item, cardIndex) => (
-          <span
-            key={item.kicker}
-            className={cardIndex < index ? "is-done" : cardIndex === index ? "is-active" : ""}
-          />
-        ))}
-      </div>
-
-      <p className="rhythm-wrapped-brand">@{mood.login} · YOUR GITHUB, WRAPPED</p>
-      <div className="rhythm-wrapped-card" key={index} aria-live="polite">
-        <p className="rhythm-wrapped-kicker">{card.kicker}</p>
-        <strong className="rhythm-wrapped-stat">{card.stat}</strong>
-        <p className="rhythm-wrapped-line">{card.line}</p>
-      </div>
-
-      <div className="rhythm-wrapped-actions">
-        <button
-          type="button"
-          className="rhythm-wrapped-nav"
-          aria-label="Previous card"
-          disabled={index === 0}
-          onClick={() => setIndex((current) => Math.max(0, current - 1))}
-        >
-          ‹
-        </button>
-        {index < lastIndex ? (
-          <button type="button" className="rhythm-wrapped-skip" onClick={() => setIndex(lastIndex)}>
-            Skip to my mood
-          </button>
-        ) : (
-          <button type="button" className="rhythm-wrapped-cta" disabled={disabled} onClick={onGenerate}>
-            {hasTrack ? "↻ Remix my mood" : "♫ Generate my beat"}
-          </button>
-        )}
-        <button
-          type="button"
-          className="rhythm-wrapped-nav"
-          aria-label="Next card"
-          disabled={index >= lastIndex}
-          onClick={() => setIndex((current) => Math.min(lastIndex, current + 1))}
-        >
-          ›
-        </button>
-      </div>
-    </section>
-  );
 }
