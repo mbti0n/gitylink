@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import BeatCat from "@/components/BeatCat";
 import { getGitHubRepositories } from "@/lib/github-repositories";
+import { getLanguageColor } from "@/lib/language-colors";
 import SpotifySuggestions from "./SpotifySuggestions";
 
 export const metadata: Metadata = {
@@ -13,20 +14,6 @@ type Track = {
   language: string;
   repositories: { name: string; url: string }[];
   color: string;
-};
-
-const languageColors: Record<string, string> = {
-  TypeScript: "#3178c6",
-  JavaScript: "#e2bd44",
-  Python: "#5788b8",
-  Rust: "#c77650",
-  Go: "#54a9bd",
-  Java: "#d77855",
-  "C++": "#7593d5",
-  Ruby: "#c95e65",
-  Swift: "#e98758",
-  HTML: "#df7654",
-  CSS: "#6e83d2",
 };
 
 export default function SkillsExplorerPage() {
@@ -54,7 +41,7 @@ async function SongsFromGitHub() {
         byLanguage.set(repository.language, {
           language: repository.language,
           repositories: [{ name: repository.name, url: repository.url }],
-          color: languageColors[repository.language] ?? "#c48757",
+          color: getLanguageColor(repository.language),
         });
       }
     }

@@ -12,6 +12,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/", icon: "◉", label: "Overview" },
   { href: "/repositories", icon: "▣", label: "Repositories" },
+  { href: "/insights", icon: "◒", label: "Repo Insights" },
   { href: "/skills", icon: "♫", label: "Repo Rhythm" },
   { href: "/rhythm", icon: "♪", label: "Rhythm Arcade" },
 ];
