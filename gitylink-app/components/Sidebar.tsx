@@ -20,15 +20,6 @@ export default function Sidebar() {
       <div className="sidebar-section sidebar-bottom">
         <div className="section-label">SETTINGS</div>
         <SettingsLink />
-        <button
-          className="nav-item compact"
-          type="button"
-          aria-label="Help and feedback"
-          title="Help and feedback"
-        >
-          <span className="nav-icon">ⓘ</span>
-          <span>Help &amp; feedback</span>
-        </button>
       </div>
 
       <Suspense

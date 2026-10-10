@@ -11,11 +11,9 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: "/", icon: "▦", label: "Overview" },
-  { href: "/activity", icon: "◷", label: "Activity" },
   { href: "/post-studio", icon: "✦", label: "Post studio" },
   { href: "/repositories", icon: "▤", label: "Repositories" },
   { href: "/skills", icon: "◈", label: "Skills explorer" },
-  { href: "/roadmap", icon: "◎", label: "Career roadmap" },
 ];
 
 function NavLink({ item, compact }: { item: NavItem; compact?: boolean }) {
