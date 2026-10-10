@@ -88,7 +88,8 @@ export default function Repositories({
         ))}
         {repositories === null ? (
           <p className="repository-empty">
-            Couldn’t load repositories. Check that <code>GITHUB_TOKEN</code> is valid and can access your account.
+            Couldn’t load repositories. Connect GitHub from the overview page or reconnect your
+            account.
           </p>
         ) : filteredRepositories.length === 0 ? (
           <p className="repository-empty">

@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { getOAuthSession } from "@/lib/provider-auth";
 
 export type GitHubProfile = {
   login: string;
@@ -15,7 +16,7 @@ type GitHubUserResponse = {
 };
 
 export const getGitHubProfile = cache(async (): Promise<GitHubProfile | null> => {
-  const token = process.env.GITHUB_TOKEN;
+  const token = (await getOAuthSession("github"))?.accessToken;
   if (!token) return null;
 
   try {

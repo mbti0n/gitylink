@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { getOAuthSession } from "@/lib/provider-auth";
 
 export type GitHubRepository = {
   id: number;
@@ -26,7 +27,7 @@ type GitHubRepositoryResponse = {
 
 export const getGitHubRepositories = cache(
   async (): Promise<GitHubRepository[] | null> => {
-    const token = process.env.GITHUB_TOKEN;
+    const token = (await getOAuthSession("github"))?.accessToken;
     if (!token) return null;
 
     const repositories: GitHubRepository[] = [];

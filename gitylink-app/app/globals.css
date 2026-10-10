@@ -835,6 +835,135 @@ a.draft-btn {
   padding: 28px 40px 30px;
 }
 
+.integration-page {
+  min-height: 420px;
+}
+
+.integration-loading {
+  padding: 24px;
+  color: var(--muted);
+}
+
+.integration-message {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid rgba(45, 187, 82, 0.35);
+  border-radius: 8px;
+  background: var(--green-soft);
+  color: var(--success-text);
+  font-size: 13px;
+}
+
+.integration-message.is-error {
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.integration-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.integration-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  min-width: 0;
+  padding: 24px;
+}
+
+.integration-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--page-bg);
+  color: var(--text);
+  font-size: 26px;
+}
+
+.integration-mark.linkedin {
+  background: var(--primary);
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.integration-card-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.integration-card-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.integration-card-title h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.integration-status {
+  padding: 4px 9px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  color: var(--muted-strong);
+  font-size: 11px;
+}
+
+.integration-status.is-connected {
+  border-color: rgba(45, 187, 82, 0.35);
+  background: var(--green-soft);
+  color: var(--success-text);
+}
+
+.integration-card-content > p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.integration-card-content > .integration-scopes {
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.integration-card-content > .integration-account {
+  color: var(--muted-strong);
+  font-size: 12px;
+}
+
+.integration-account strong {
+  color: var(--text);
+}
+
+.integration-actions {
+  margin-top: 20px;
+}
+
+.integration-actions form {
+  margin: 0;
+}
+
+.integration-security-note {
+  max-width: 760px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
 .page-heading {
   display: flex;
   align-items: center;
@@ -2657,6 +2786,10 @@ a.draft-btn {
   }
 
   .draft-workflow-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .integration-grid {
     grid-template-columns: 1fr;
   }
 

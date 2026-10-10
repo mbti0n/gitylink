@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getGitHubProfile } from "@/lib/github-profile";
+import { getOAuthSession } from "@/lib/provider-auth";
 import Preferences from "./Preferences";
 
 export const metadata: Metadata = {
@@ -18,6 +19,17 @@ export default function PreferencesPage() {
 }
 
 async function PreferencesWithGitHub() {
-  const github = await getGitHubProfile();
-  return <Preferences github={github} />;
+  const [github, githubSession, linkedinSession] = await Promise.all([
+    getGitHubProfile(),
+    getOAuthSession("github"),
+    getOAuthSession("linkedin"),
+  ]);
+  return (
+    <Preferences
+      github={github}
+      githubConnected={Boolean(githubSession)}
+      linkedinConnected={Boolean(linkedinSession)}
+      linkedinName={linkedinSession?.displayName}
+    />
+  );
 }

@@ -20,10 +20,15 @@ function initials(name: string) {
 
 export default function Preferences({
   github,
+  githubConnected,
+  linkedinConnected,
+  linkedinName,
 }: {
   github: GitHubProfile | null;
+  githubConnected: boolean;
+  linkedinConnected: boolean;
+  linkedinName?: string;
 }) {
-  const [linkedInConnected, setLinkedInConnected] = useState(true);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const githubName = github?.name || github?.login || "GitHub account";
@@ -73,22 +78,29 @@ export default function Preferences({
                 GitHub <span className="pref-role">Source</span>
               </strong>
               <span>
-                {github
+                {githubConnected && github
                   ? `Signed in as ${githubName} · @${github.login}`
-                  : "GitHub profile unavailable"}
+                  : "Connect GitHub to load your profile and repository activity."}
               </span>
               <span>Reads commits from the repositories you choose.</span>
             </div>
             <div className="pref-connection-actions">
-              <span className="status-badge">Connected</span>
-              <a
-                href="https://github.com/settings/applications"
-                target="_blank"
-                rel="noreferrer"
-                className="text-link"
-              >
-                Manage on GitHub ↗
-              </a>
+              {githubConnected ? (
+                <>
+                  <span className="status-badge">Connected</span>
+                  <form action="/api/auth/github" method="post">
+                    <button type="submit" className="btn btn-secondary">
+                      Disconnect
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <form action="/api/auth/github" method="get">
+                  <button type="submit" className="btn btn-primary">
+                    Connect GitHub
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 
@@ -100,9 +112,9 @@ export default function Preferences({
               <strong>
                 LinkedIn <span className="pref-role">Destination</span>
               </strong>
-              {linkedInConnected ? (
+              {linkedinConnected ? (
                 <>
-                  <span>Posting as {githubName}</span>
+                  <span>Connected as {linkedinName || "LinkedIn account"}</span>
                   <span>Nothing is published until you approve a post.</span>
                 </>
               ) : (
@@ -110,25 +122,21 @@ export default function Preferences({
               )}
             </div>
             <div className="pref-connection-actions">
-              {linkedInConnected ? (
+              {linkedinConnected ? (
                 <>
                   <span className="status-badge">Connected</span>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setLinkedInConnected(false)}
-                  >
-                    Disconnect
-                  </button>
+                  <form action="/api/auth/linkedin" method="post">
+                    <button type="submit" className="btn btn-secondary">
+                      Disconnect
+                    </button>
+                  </form>
                 </>
               ) : (
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => setLinkedInConnected(true)}
-                >
-                  Connect LinkedIn
-                </button>
+                <form action="/api/auth/linkedin" method="get">
+                  <button type="submit" className="btn btn-primary">
+                    Connect LinkedIn
+                  </button>
+                </form>
               )}
             </div>
           </div>

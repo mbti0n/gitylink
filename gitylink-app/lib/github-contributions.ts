@@ -1,4 +1,5 @@
 import { io } from "next/cache";
+import { getOAuthSession } from "@/lib/provider-auth";
 
 type ContributionLevel =
   | "NONE"
@@ -55,7 +56,7 @@ const contributionCalendarQuery = `
 `;
 
 export async function getGitHubContributionCalendar(): Promise<ContributionCalendar | null> {
-  const token = process.env.GITHUB_TOKEN;
+  const token = (await getOAuthSession("github"))?.accessToken;
   if (!token) return null;
 
   await io();

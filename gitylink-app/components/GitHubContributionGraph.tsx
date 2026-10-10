@@ -16,7 +16,8 @@ export default function GitHubContributionGraph({
   if (!calendar) {
     return (
       <p className="github-calendar-message">
-        Couldn’t load contribution activity. Check that <code>GITHUB_TOKEN</code> is set and valid.
+        Couldn’t load contribution activity. Connect GitHub from the overview page or reconnect
+        your account.
       </p>
     );
   }

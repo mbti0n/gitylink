@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { getGitHubProfile } from "@/lib/github-profile";
 import { getGitHubRepositories } from "@/lib/github-repositories";
+import { getOAuthSession } from "@/lib/provider-auth";
 
 export type GitHubCommit = {
   sha: string;
@@ -32,7 +33,7 @@ const GITHUB_HEADERS = {
 };
 
 export const getGitHubActivity = cache(async (limit: number): Promise<GitHubCommit[] | null> => {
-  const token = process.env.GITHUB_TOKEN;
+  const token = (await getOAuthSession("github"))?.accessToken;
   if (!token) return null;
 
   const headers = { ...GITHUB_HEADERS, Authorization: `Bearer ${token}` };
@@ -89,7 +90,7 @@ export async function getGitHubRepositoryCommits(
   repositoryName: string,
   limit = 30,
 ): Promise<GitHubCommit[] | null> {
-  const token = process.env.GITHUB_TOKEN;
+  const token = (await getOAuthSession("github"))?.accessToken;
   if (!token) return null;
 
   const [profile, repositories] = await Promise.all([
