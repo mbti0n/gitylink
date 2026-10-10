@@ -4565,6 +4565,17 @@ a.draft-btn {
   height: 120px;
 }
 
+.record-heading-with-cat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.record-heading-with-cat .beat-cat {
+  width: 64px;
+  height: 64px;
+}
+
 .record-first-listen .beat-cat {
   width: 76px;
   height: 76px;
