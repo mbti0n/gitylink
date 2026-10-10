@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navItems = [
+type NavItem = {
+  href: string;
+  icon: string;
+  label: string;
+};
+
+const navItems: NavItem[] = [
   { href: "/", icon: "▦", label: "Overview" },
   { href: "/activity", icon: "◷", label: "Activity" },
   { href: "/post-studio", icon: "✦", label: "Post studio" },
@@ -12,25 +18,31 @@ const navItems = [
   { href: "/roadmap", icon: "◎", label: "Career roadmap" },
 ];
 
-export default function SidebarNav() {
+function NavLink({ item, compact }: { item: NavItem; compact?: boolean }) {
   const pathname = usePathname();
+  const active = pathname === item.href;
+  const className = ["nav-item", compact && "compact", active && "active"]
+    .filter(Boolean)
+    .join(" ");
 
   return (
+    <Link href={item.href} className={className} aria-current={active ? "page" : undefined}>
+      <span className="nav-icon">{item.icon}</span>
+      <span>{item.label}</span>
+    </Link>
+  );
+}
+
+export function SettingsLink() {
+  return <NavLink item={{ href: "/preferences", icon: "⚙", label: "Preferences" }} compact />;
+}
+
+export default function SidebarNav() {
+  return (
     <nav className="nav-list" aria-label="Sidebar navigation">
-      {navItems.map((item) => {
-        const active = pathname === item.href;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={active ? "nav-item active" : "nav-item"}
-            aria-current={active ? "page" : undefined}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
+      {navItems.map((item) => (
+        <NavLink key={item.href} item={item} />
+      ))}
     </nav>
   );
 }

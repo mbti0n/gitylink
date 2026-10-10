@@ -1,4 +1,4 @@
-import SidebarNav from "./SidebarNav";
+import SidebarNav, { SettingsLink } from "./SidebarNav";
 
 export default function Sidebar() {
   return (
@@ -18,10 +18,7 @@ export default function Sidebar() {
 
       <div className="sidebar-section sidebar-bottom">
         <div className="section-label">SETTINGS</div>
-        <button className="nav-item compact" type="button">
-          <span className="nav-icon">⚙</span>
-          <span>Preferences</span>
-        </button>
+        <SettingsLink />
         <button className="nav-item compact" type="button">
           <span className="nav-icon">ⓘ</span>
           <span>Help &amp; feedback</span>
