@@ -171,7 +171,7 @@ async function LibraryOverview() {
       <Reveal>
         <section className="record-activity-section">
           <div className="record-section-heading">
-            <div className="record-heading-with-cat">
+            <div className={`record-heading-with-cat${calendar ? "" : " is-compact"}`}>
               <BeatCat />
               <div>
                 <p className="record-eyebrow">The making of the music</p>
