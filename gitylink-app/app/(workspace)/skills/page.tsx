@@ -6,7 +6,7 @@ import { getGitHubRepositories } from "@/lib/github-repositories";
 import SpotifySuggestions from "./SpotifySuggestions";
 
 export const metadata: Metadata = {
-  title: "Skills Explorer",
+  title: "Repo Rhythm",
 };
 
 type Track = {
@@ -75,8 +75,8 @@ async function SongsFromGitHub() {
     <div className="record-page songs-page">
       <header className="record-page-heading">
         <div>
-          <p className="record-eyebrow">The skills explorer</p>
-          <h1>Your work has a soundtrack.</h1>
+          <p className="record-eyebrow">The beat behind your builds</p>
+          <h1>Your work has a rhythm.</h1>
           <p>
             Each primary language in your repositories becomes a track. More
             projects in that language means more plays.

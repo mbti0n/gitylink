@@ -15,11 +15,11 @@ These rules apply when implementing Figma designs through the Figma MCP server.
   | Dashboard | `1:2` | `app/(workspace)/page.tsx` |
   | Activity | `31:1723` | `app/(workspace)/activity/` |
   | Post studio | `31:2090` | `app/(workspace)/post-studio/` |
-  | Skills Explorer | `2:2` | Not built |
+  | Repo Rhythm | `2:2` | Not built |
   | Preferences | — (no Figma frame) | `app/(workspace)/preferences/` (Settings → Preferences). There's no custom account: identity comes from GitHub, so never add name, email, password or photo fields. Classes: `.pref-flow`, `.pref-section`, `.pref-connection`, `.btn-danger`, `--danger*` tokens |
   | Career roadmap | — (no Figma frame) | `app/(workspace)/roadmap/page.tsx`, styled with the shared `page-*`, `kpi-grid` and `.panel` classes |
 
-- Each screen is a 240px `Navigation sidebar` (`Sidebar` on Skills Explorer) plus a 1200px `Main workspace`.
+- Each screen is a 240px `Navigation sidebar` (`Sidebar` on Repo Rhythm) plus a 1200px `Main workspace`.
 - Reused Figma components (instances): `Navigation item`, `Active navigation`, `Action` (buttons), `Field` (inputs), `Status`.
 - Figma component sets: `CTP / Navigation`, `CTP / Navigation active`, `CTP / Primary`, `CTP / Secondary`, `CTP / Input`, `CTP / Badge`. Text styles: `CTP / heading` (Inter 600 28/1.5), `CTP / section` (600 18), `CTP / body` (400 14), `CTP / caption` (400 12).
 - **The file defines no Figma variables** (`get_variable_defs` returns `{}`). `get_design_context` output uses `var(--ctp-*, <fallback>)` names, but those variables don't exist in code. Map them to the CSS tokens below; don't paste them in as literals:

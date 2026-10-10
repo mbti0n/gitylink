@@ -15,7 +15,7 @@ export default function Sidebar() {
         </div>
         <div className="brand-text">
           <span className="brand-title">Repo Radio</span>
-          <span className="brand-subtitle">your code, on wax</span>
+          <span className="brand-subtitle">The Beat Behind Your Builds</span>
         </div>
       </div>
 
