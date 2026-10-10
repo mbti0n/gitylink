@@ -85,11 +85,6 @@ const stories: Story[] = [
 
 const toneOptions = ["Authentic & reflective", "Professional", "Casual", "Enthusiastic"];
 const lengthOptions = ["Short", "Medium", "Long"];
-const platforms = [
-  { id: "linkedin", icon: "in", label: "LinkedIn" },
-  { id: "x", icon: "𝕏", label: "X / Twitter" },
-];
-
 function countWords(text: string) {
   return text.trim() ? text.trim().split(/\s+/).length : 0;
 }
@@ -117,13 +112,10 @@ export default function PostStudio({
   const [copied, setCopied] = useState(false);
   const [tone, setTone] = useState(toneOptions[0]);
   const [length, setLength] = useState("Medium");
-  const [platform, setPlatform] = useState("linkedin");
-
   const story = stories.find((s) => s.repo === selectedRepo) ?? stories[0];
   const draft = drafts[story.repo];
   const visibleStories =
     repoFilter === "all" ? stories : stories.filter((s) => s.repo === repoFilter);
-  const platformLabel = platforms.find((p) => p.id === platform)?.label;
   const authorName = profile?.name || profile?.login || "GitHub account";
   const authorDetails = profile
     ? `@${profile.login}${profile.bio ? ` · ${profile.bio}` : ""}`
@@ -302,21 +294,6 @@ export default function PostStudio({
           <h2>Post preview</h2>
 
           <div className="panel preview-panel">
-            <div className="platform-tabs" role="tablist" aria-label="Preview platform">
-              {platforms.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={platform === p.id}
-                  className={platform === p.id ? "btn btn-primary tab" : "btn btn-secondary tab"}
-                  onClick={() => setPlatform(p.id)}
-                >
-                  {p.icon}  {p.label}
-                </button>
-              ))}
-            </div>
-            <hr className="divider" />
             <div className="author">
               <div className="author-avatar">{initials(authorName)}</div>
               <div className="author-details">
@@ -346,7 +323,7 @@ export default function PostStudio({
           <div className="panel review-panel">
             <strong>✓  Ready for your final review</strong>
             <p>
-              Check the details, add your voice, then copy your post to share on {platformLabel}.
+              Check the details, add your voice, then copy your post to share on LinkedIn.
             </p>
           </div>
         </div>
