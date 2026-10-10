@@ -1,20 +1,14 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import Topbar from "@/components/Topbar";
+import GitHubContributionGraph from "@/components/GitHubContributionGraph";
+import { getGitHubContributionCalendar } from "@/lib/github-contributions";
 
 const metrics = [
   { icon: "▤", value: "12", label: "Repositories tracked", tone: "blue" },
   { icon: "⌁", value: "148", label: "Commits this month", tone: "green" },
   { icon: "✦", value: "8", label: "Post opportunities", tone: "amber" },
   { icon: "◈", value: "24", label: "Skills discovered", tone: "blue" },
-];
-
-const heatmapRows = [
-  [0, 1, 0, 2, 3, 3, 1],
-  [2, 3, 1, 2, 3, 2, 1],
-  [0, 1, 0, 2, 3, 2, 1],
-  [2, 3, 1, 2, 2, 3, 1],
-  [0, 1, 0, 2, 3, 2, 1],
-  [2, 3, 1, 2, 3, 1, 0],
 ];
 
 const shareCards = [
@@ -76,37 +70,9 @@ export default function Home() {
         </div>
 
         <div className="activity-layout">
-          <div className="overview-card">
-            <div className="card-header">
-              <span>Contribution overview</span>
-              <span className="muted">Past 12 weeks</span>
-            </div>
-
-            <div className="heatmap" aria-label="Commit activity chart">
-              {heatmapRows.map((row, rowIndex) => (
-                <div key={rowIndex} className="heatmap-row">
-                  {row.map((cell, colIndex) => (
-                    <span
-                      key={`${rowIndex}-${colIndex}`}
-                      className={`heat-cell level-${cell}`}
-                      aria-label={`Activity level ${cell}`}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-
-            <div className="legend">
-              <span>Less</span>
-              <div className="legend-scale">
-                <span className="heat-cell level-0" />
-                <span className="heat-cell level-1" />
-                <span className="heat-cell level-2" />
-                <span className="heat-cell level-3" />
-              </div>
-              <span>More</span>
-            </div>
-          </div>
+          <Suspense fallback={<div className="overview-card">Loading contribution activity…</div>}>
+            <ContributionOverview />
+          </Suspense>
 
           <aside className="insight-card">
             <div className="insight-title">✦ This week&apos;s highlight</div>
@@ -149,5 +115,24 @@ export default function Home() {
         ))}
       </div>
     </section>
+  );
+}
+
+async function ContributionOverview() {
+  const contributionCalendar = await getGitHubContributionCalendar();
+
+  return (
+    <div className="overview-card">
+      <div className="card-header">
+        <span>Contribution overview</span>
+        <span className="muted">
+          {contributionCalendar
+            ? `${contributionCalendar.totalContributions.toLocaleString()} contributions in the past year`
+            : "GitHub activity unavailable"}
+        </span>
+      </div>
+
+      <GitHubContributionGraph calendar={contributionCalendar} />
+    </div>
   );
 }

@@ -39,7 +39,7 @@ body {
   min-height: 100vh;
   background: var(--page-bg);
   color: var(--text);
-  font-family: var(--font-inter), "Segoe UI", sans-serif;
+  font-family: var(--font-geist), "Segoe UI", sans-serif;
 }
 
 button,
@@ -83,7 +83,7 @@ button {
   color: #0f2417;
   display: grid;
   place-items: center;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   box-shadow: inset 0 -3px 10px rgba(8, 26, 13, 0.2);
 }
@@ -169,8 +169,8 @@ button {
 }
 
 .nav-icon {
-  font-size: 16px;
-  width: 18px;
+  font-size: 18px;
+  width: 20px;
   text-align: center;
   display: inline-block;
   color: currentColor;
@@ -311,13 +311,13 @@ a.draft-btn {
 }
 
 .metric-icon {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   display: grid;
   place-items: center;
   background: var(--chip-bg);
-  font-size: 18px;
+  font-size: 21px;
   margin-bottom: 18px;
 }
 
@@ -401,6 +401,73 @@ a.draft-btn {
   font-size: 11px;
 }
 
+.github-calendar-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.github-calendar {
+  display: flex;
+  gap: 3px;
+  width: max-content;
+}
+
+.github-week {
+  position: relative;
+  display: grid;
+  grid-template-rows: repeat(7, 11px);
+  gap: 3px;
+  padding-top: 17px;
+}
+
+.github-month-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 13px;
+}
+
+.github-cell {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  background: #30363d;
+}
+
+.github-cell-empty {
+  visibility: hidden;
+}
+
+.github-level-0 { background: #30363d; }
+.github-level-1 { background: #0e4429; }
+.github-level-2 { background: #006d32; }
+.github-level-3 { background: #26a641; }
+.github-level-4 { background: #39d353; }
+
+.github-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.github-legend .github-cell {
+  width: 10px;
+  height: 10px;
+}
+
+.github-calendar-message {
+  margin: 24px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .heatmap {
   display: flex;
   flex-direction: column;
@@ -410,12 +477,13 @@ a.draft-btn {
 
 .heatmap-row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, 12px);
   gap: 6px;
 }
 
 .heat-cell {
   display: block;
+  width: 12px;
   height: 12px;
   border-radius: 3px;
   background: rgba(102, 111, 121, 0.32);
@@ -544,7 +612,7 @@ a.draft-btn {
 
 .repo-bullet {
   color: var(--link);
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .repo-name {
@@ -1194,12 +1262,12 @@ a.draft-btn {
 }
 
 .skill-icon {
-  width: 35px;
-  height: 35px;
+  width: 38px;
+  height: 38px;
   border-radius: 9px;
   display: grid;
   place-items: center;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   margin-top: 3px;
 }
@@ -1506,76 +1574,6 @@ a.draft-btn {
   font-size: 11px;
 }
 
-.contrib-calendar {
-  display: grid;
-  grid-template-columns: 28px repeat(24, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.day-labels {
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-  padding-top: 5px;
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-.contrib-week {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  height: 87px;
-}
-
-.contrib-cell {
-  flex: 1;
-  border-radius: 2px;
-}
-
-.contrib-0 {
-  background: #39434a;
-}
-
-.contrib-1 {
-  background: #1e5a38;
-}
-
-.contrib-2 {
-  background: #247c46;
-}
-
-.contrib-3 {
-  background: #2a9f4b;
-}
-
-.contrib-4 {
-  background: var(--green);
-}
-
-.contrib-legend {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-.intensity-scale {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.intensity-scale .contrib-cell {
-  flex: none;
-  width: 10px;
-  height: 10px;
-}
-
 .activity-grid {
   display: grid;
   grid-template-columns: minmax(0, 744fr) minmax(280px, 356fr);
@@ -1646,15 +1644,15 @@ a.draft-btn {
 }
 
 .commit-marker {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
   border-radius: 8px;
   background: var(--green-soft);
   color: var(--green);
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .feed-details {
@@ -1848,8 +1846,8 @@ a.draft-btn {
 .timeline-marker {
   position: relative;
   flex-shrink: 0;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   margin-top: 18px;
   border: 2px solid var(--panel-border);
   border-radius: 50%;
@@ -2100,19 +2098,19 @@ a.draft-btn {
   position: absolute;
   left: 4px;
   color: var(--muted);
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .pref-flow-icon {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
   border-radius: 8px;
   background: var(--chip-bg);
   color: var(--green);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
 }
 
@@ -2122,7 +2120,7 @@ a.draft-btn {
 
 .pref-flow-step:last-child .pref-flow-icon {
   color: var(--link);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .pref-flow-text {
@@ -2235,21 +2233,21 @@ a.draft-btn {
 }
 
 .pref-connection-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
   border-radius: 8px;
   background: var(--page-bg);
   color: var(--green);
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .pref-connection-icon.linkedin {
   background: var(--primary);
   color: #fff;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
 }
 
@@ -2346,10 +2344,6 @@ a.draft-btn {
     grid-template-columns: 1fr;
   }
 
-  .contrib-calendar {
-    gap: 6px;
-  }
-
   .pref-section {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -2433,10 +2427,6 @@ a.draft-btn {
   .sync-status {
     flex: 1;
     text-align: left;
-  }
-
-  .contrib-calendar {
-    gap: 4px;
   }
 
   .settings-row {

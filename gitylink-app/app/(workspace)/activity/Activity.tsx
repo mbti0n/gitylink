@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import GitHubContributionGraph from "@/components/GitHubContributionGraph";
+import type { ContributionCalendar } from "@/lib/github-contributions";
 
 type Commit = {
   sha: string;
@@ -20,34 +22,6 @@ const metrics = [
   { value: "12", label: "Repositories tracked", note: "3 active this week" },
   { value: "18", label: "Active days", note: "6-day current streak" },
   { value: "8", label: "Post opportunities", note: "3 new moments this week" },
-];
-
-// Intensity 0–4 per day (Mon–Sun) for each of the past 24 weeks.
-const contributionWeeks = [
-  [1, 3, 0, 2, 4, 1, 3],
-  [3, 0, 2, 4, 1, 3, 0],
-  [1, 3, 0, 2, 4, 1, 3],
-  [0, 2, 4, 1, 3, 0, 2],
-  [2, 4, 1, 3, 0, 2, 4],
-  [0, 2, 4, 1, 3, 0, 2],
-  [4, 1, 3, 0, 2, 4, 1],
-  [1, 3, 0, 2, 4, 1, 3],
-  [4, 1, 3, 0, 2, 4, 1],
-  [3, 0, 2, 4, 1, 3, 0],
-  [0, 2, 4, 1, 3, 0, 2],
-  [3, 0, 2, 4, 1, 3, 0],
-  [2, 4, 1, 3, 0, 2, 4],
-  [4, 1, 3, 0, 2, 4, 1],
-  [2, 4, 1, 3, 0, 2, 4],
-  [1, 3, 0, 2, 4, 1, 3],
-  [3, 0, 2, 4, 1, 3, 0],
-  [1, 3, 0, 2, 4, 1, 3],
-  [0, 2, 4, 1, 3, 0, 2],
-  [2, 4, 1, 3, 0, 2, 4],
-  [0, 2, 4, 1, 3, 0, 2],
-  [4, 1, 3, 0, 2, 4, 1],
-  [1, 3, 0, 2, 4, 1, 3],
-  [4, 1, 3, 0, 2, 4, 1],
 ];
 
 const commits: Commit[] = [
@@ -95,7 +69,11 @@ const periods = [
   { id: "month", label: "This month", maxDays: 31 },
 ];
 
-export default function Activity() {
+export default function Activity({
+  contributionCalendar,
+}: {
+  contributionCalendar: ContributionCalendar | null;
+}) {
   const [repo, setRepo] = useState("all");
   const [period, setPeriod] = useState("month");
   const [query, setQuery] = useState("");
@@ -183,36 +161,17 @@ export default function Activity() {
         ))}
       </div>
 
-      <div className="panel contrib-panel">
-        <div className="panel-heading">
-          <span className="panel-title">Contribution overview</span>
-          <span className="panel-meta">{TOTAL_COMMITS} commits this month · Past 24 weeks</span>
-        </div>
-        <div className="contrib-calendar" role="img" aria-label="Commit activity over the past 24 weeks">
-          <div className="day-labels" aria-hidden="true">
-            <span>Mon</span>
-            <span>Wed</span>
-            <span>Fri</span>
+        <div className="panel contrib-panel">
+          <div className="panel-heading">
+            <span className="panel-title">Contribution overview</span>
+            <span className="panel-meta">
+              {contributionCalendar
+                ? `${contributionCalendar.totalContributions.toLocaleString()} contributions in the past year`
+                : "GitHub activity unavailable"}
+            </span>
           </div>
-          {contributionWeeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="contrib-week">
-              {week.map((level, dayIndex) => (
-                <span key={dayIndex} className={`contrib-cell contrib-${level}`} />
-              ))}
-            </div>
-          ))}
+          <GitHubContributionGraph calendar={contributionCalendar} />
         </div>
-        <div className="contrib-legend">
-          <span>Apr 27 – Oct 11</span>
-          <div className="intensity-scale" aria-hidden="true">
-            <span>Less</span>
-            {[0, 1, 2, 3, 4].map((level) => (
-              <span key={level} className={`contrib-cell contrib-${level}`} />
-            ))}
-            <span>More</span>
-          </div>
-        </div>
-      </div>
 
       <div className="activity-grid">
         <div className="page-column">
