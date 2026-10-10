@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
   { href: "/post-studio", icon: "✦", label: "Post studio" },
   { href: "/repositories", icon: "▤", label: "Repositories" },
   { href: "/skills", icon: "◈", label: "Skills explorer" },
+  { href: "/roadmap", icon: "◎", label: "Career roadmap" },
 ];
 
 function NavLink({ item, compact }: { item: NavItem; compact?: boolean }) {
