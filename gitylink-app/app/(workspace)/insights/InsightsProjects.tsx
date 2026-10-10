@@ -64,7 +64,12 @@ export default function InsightsProjects({
                   {repository.name}
                   <span aria-hidden="true"> ↗</span>
                 </a>
-                <span>{repository.language || "Language not specified"}</span>
+                <span className="insights-project-language">
+                  {repository.language || "Language not specified"}
+                </span>
+                <p>
+                  {repository.description || "No project description provided."}
+                </p>
               </div>
               <span className="insights-project-stat" aria-label={`${repository.stars} stars`}>
                 ★ {repository.stars.toLocaleString()}

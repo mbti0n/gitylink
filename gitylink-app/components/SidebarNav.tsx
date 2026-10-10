@@ -12,10 +12,10 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/", icon: "◉", label: "Overview" },
   { href: "/repositories", icon: "▣", label: "Repositories" },
-  { href: "/insights", icon: "◒", label: "Repo Insights" },
   { href: "/skills", icon: "♫", label: "Repo Rhythm" },
-  { href: "/wrapped", icon: "✦", label: "Repo Wrapped" },
+  { href: "/battle", icon: "⚔", label: "Repo Battle" },
   { href: "/rhythm", icon: "♪", label: "Rhythm Arcade" },
+  { href: "/wrapped", icon: "✦", label: "Repo Wrapped" },
 ];
 
 function NavLink({ item, compact }: { item: NavItem; compact?: boolean }) {

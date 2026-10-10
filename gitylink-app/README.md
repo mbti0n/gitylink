@@ -2,7 +2,9 @@
 
 Repo Radio turns GitHub repositories into album covers and the primary languages
 used across them into a skills setlist. The workspace includes Overview,
-Repositories, Repo Insights, Repo Rhythm, and Rhythm Arcade.
+Repositories, Repo Rhythm, Repo Battle, and Rhythm Arcade. Repo Battle compares
+the public repository counts of two different GitHub users or organizations and
+visualizes their share of the combined total in a pie chart.
 
 ## Getting Started
 
@@ -27,9 +29,9 @@ Copy `.env.example` to `.env.local` and configure these values:
 - `AUTH_BASE_URL`: the app origin, such as `http://localhost:3000` in development.
 - `AUTH_SECRET`: a random secret with at least 32 characters. For example, generate one with `openssl rand -base64 32`.
 - `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: create a GitHub OAuth App and set its callback URL to `${AUTH_BASE_URL}/api/auth/github/callback`. The app requests `read:user` and `public_repo`.
-- `GEMINI_API_KEY`: enables on-demand AI-generated repository cover art.
+- `GEMINI_API_KEY`: enables on-demand AI-generated repository cover art and musical impressions for soundtrack suggestions.
 - `GEMINI_IMAGE_MODEL`: optional image model override; defaults to `gemini-2.5-flash-image`.
-- `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`: create a Spotify developer app to enable track suggestions in Repo Rhythm. Credentials are used on the server only; recommendations search Spotify using genres inferred from your GitHub repository languages, names, and descriptions.
+- `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`: create a Spotify developer app to enable track suggestions in Repo Rhythm. Credentials are used on the server only; recommendations search Spotify using genres inferred from your GitHub repository names, languages, and descriptions.
 
 Restart the development server after changing environment variables. Connect or disconnect GitHub from the overview page. Its access token is encrypted and stored in an HTTP-only cookie; it is not sent to browser JavaScript. Repository cover art is generated only when requested and saved in the current browser. The optional `GITHUB_TOKEN` is only used by the standalone `npm run github` smoke test.
 

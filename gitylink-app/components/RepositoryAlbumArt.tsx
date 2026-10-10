@@ -4,8 +4,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { GitHubRepository } from "@/lib/github-repositories";
 
-const coverStorageKey = (repositoryId: number) =>
-  `repo-radio:album-cover:${repositoryId}`;
+export const getRepositoryCoverStorageKey = (identifier: string | number) =>
+  `repo-radio:album-cover:${identifier}`;
 
 export default function RepositoryAlbumArt({
   repository,
@@ -22,7 +22,9 @@ export default function RepositoryAlbumArt({
     let cancelled = false;
     void Promise.resolve().then(() => {
       try {
-        const storedCover = window.localStorage.getItem(coverStorageKey(repository.id));
+        const storedCover = window.localStorage.getItem(
+          getRepositoryCoverStorageKey(repository.id),
+        );
         if (!cancelled) setCover(storedCover ?? "");
       } catch {
         if (!cancelled) {
@@ -57,7 +59,7 @@ export default function RepositoryAlbumArt({
       const optimized = await optimizeCover(original);
       setCover(optimized);
       try {
-        window.localStorage.setItem(coverStorageKey(repository.id), optimized);
+        window.localStorage.setItem(getRepositoryCoverStorageKey(repository.id), optimized);
       } catch {
         setError("Cover generated, but browser storage is full; it won’t persist after refresh.");
       }
@@ -113,7 +115,7 @@ export default function RepositoryAlbumArt({
   );
 }
 
-async function optimizeCover(dataUrl: string): Promise<string> {
+export async function optimizeCover(dataUrl: string): Promise<string> {
   const response = await fetch(dataUrl);
   const bitmap = await createImageBitmap(await response.blob());
   const edge = 640;
