@@ -4681,6 +4681,16 @@ a.draft-btn {
   height: 64px;
 }
 
+/* Without GitHub data the card below is one line, so the cat shrinks to match */
+.record-heading-with-cat.is-compact {
+  gap: 8px;
+}
+
+.record-heading-with-cat.is-compact .beat-cat {
+  width: 40px;
+  height: 40px;
+}
+
 .record-first-listen .beat-cat {
   width: 76px;
   height: 76px;
