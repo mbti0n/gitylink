@@ -4153,12 +4153,21 @@ a.draft-btn {
   white-space: nowrap;
 }
 
-.album-card-copy h2 a {
+.album-title-button {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: inherit;
+  font: inherit;
   text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
-.album-card-copy h2 a:hover {
+.album-title-button:hover {
   color: var(--rr-accent-text);
 }
 
@@ -4181,6 +4190,147 @@ a.draft-btn {
   margin-top: 13px;
   color: var(--muted);
   font-size: 9px;
+}
+
+.album-card-meta a {
+  color: var(--rr-accent-text);
+  text-decoration: none;
+}
+
+.album-card-meta a:hover {
+  text-decoration: underline;
+}
+
+.album-soundtrack {
+  margin-top: 15px;
+  padding-top: 13px;
+  border-top: 1px solid var(--rr-divider);
+}
+
+.album-soundtrack .record-eyebrow {
+  margin: 0;
+}
+
+.album-soundtrack-impression {
+  margin: 7px 0 10px;
+  color: var(--rr-heading);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.album-soundtrack-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.album-soundtrack-genres span {
+  padding: 5px 7px;
+  border-radius: 99px;
+  background: var(--rr-chip-warm);
+  color: var(--muted-strong);
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.album-soundtrack-genres strong {
+  color: var(--rr-heading);
+  text-transform: capitalize;
+}
+
+.album-song-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.album-song-list li {
+  display: grid;
+  grid-template-columns: 17px 34px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 7px;
+  min-height: 48px;
+  border-top: 1px solid var(--rr-divider);
+}
+
+.album-song-number {
+  color: var(--rr-faint);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 9px;
+}
+
+.album-song-list img,
+.album-song-art-placeholder {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--rr-chip-warm);
+  color: var(--rr-accent-text);
+  object-fit: cover;
+}
+
+.album-song-list li > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.album-song-list li strong,
+.album-song-list li > div > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.album-song-list li strong {
+  color: var(--rr-heading);
+  font-size: 9px;
+}
+
+.album-song-list li > div > span {
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.album-song-list li > a {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--rr-accent-text);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.album-song-list li > a:hover {
+  background: var(--rr-chip-warm);
+}
+
+.album-soundtrack-feedback,
+.album-soundtrack-error,
+.album-soundtrack-attribution {
+  margin: 8px 0 0;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.album-soundtrack-feedback,
+.album-soundtrack-attribution {
+  color: var(--muted);
+}
+
+.album-soundtrack-error {
+  color: #a13d32;
+}
+
+.album-soundtrack-attribution {
+  font-size: 8px;
 }
 
 .cover-cost-note {
