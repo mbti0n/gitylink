@@ -1,90 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { GitHubCommit } from "@/lib/github-activity";
 import type { GitHubProfile } from "@/lib/github-profile";
+import type { GitHubRepository } from "@/lib/github-repositories";
 
-type Commit = {
-  sha: string;
-  message: string;
-};
+type RewriteAction = "generate" | "rewrite" | "shorten" | "new_hook";
 
-type Story = {
-  repo: string;
-  repoDescription: string;
-  title: string;
-  time: string;
-  commits: Commit[];
-  commitCount: number;
-  span: string;
-  draft: string;
-};
-
-const stories: Story[] = [
-  {
-    repo: "task-manager-api",
-    repoDescription: "A task management API with JWT authentication.",
-    title: "Finally fixed JWT authentication",
-    time: "Yesterday",
-    commitCount: 6,
-    span: "4 days of work · main branch",
-    commits: [
-      { sha: "7c2e9a4", message: "Fix JWT refresh flow" },
-      { sha: "5d8a1c0", message: "Validate protected routes" },
-      { sha: "c41e6b8", message: "Handle expired tokens" },
-    ],
-    draft: [
-      "After 4 days of debugging, JWT authentication finally works end to end in my task-manager API.",
-      "The tricky part? Keeping token refresh and protected routes in sync.",
-      "I traced the middleware, fixed validation, and made expired tokens fail cleanly.",
-      "My takeaway: debug the whole request lifecycle, not just the failing endpoint.",
-      "Small milestone, real progress. Next up: edge-case tests.",
-      "Built with Node.js and PostgreSQL.",
-      "#BuildInPublic #NodeJS #WebDevelopment",
-    ].join("\n\n"),
-  },
-  {
-    repo: "portfolio-website",
-    repoDescription: "My personal portfolio, built with React and TypeScript.",
-    title: "Shipped my new personal portfolio",
-    time: "2 hours ago",
-    commitCount: 8,
-    span: "2 weeks of work · main branch",
-    commits: [
-      { sha: "a91f3d2", message: "Deploy production build" },
-      { sha: "3be07c5", message: "Refine page transitions" },
-      { sha: "e2d4a18", message: "Make project grid responsive" },
-    ],
-    draft: [
-      "My new portfolio is live.",
-      "I rebuilt it from scratch with responsive pages, smoother animations, and a cleaner project grid.",
-      "My takeaway: shipping a simple version beats polishing forever.",
-      "Built with React and TypeScript.",
-      "#BuildInPublic #React #TypeScript",
-    ].join("\n\n"),
-  },
-  {
-    repo: "docker-homelab",
-    repoDescription: "Containerized development environment for my homelab.",
-    title: "Automated my development environment",
-    time: "3 days ago",
-    commitCount: 5,
-    span: "3 days of work · main branch",
-    commits: [
-      { sha: "f07b6c1", message: "Add compose file for dev services" },
-      { sha: "9c3e2a7", message: "Script environment bootstrap" },
-      { sha: "41d8b0e", message: "Document local setup" },
-    ],
-    draft: [
-      "Setting up my dev environment used to take an afternoon. Now it takes one command.",
-      "I moved my services into Docker containers and scripted the bootstrap.",
-      "My takeaway: automate the boring setup once, and every project after that starts faster.",
-      "#BuildInPublic #Docker #DevOps",
-    ].join("\n\n"),
-  },
+const toneOptions = [
+  { value: "authentic_reflective", label: "Authentic & reflective" },
+  { value: "professional", label: "Professional" },
+  { value: "casual", label: "Casual" },
+  { value: "enthusiastic", label: "Enthusiastic" },
 ];
 
-const toneOptions = ["Authentic & reflective", "Professional", "Casual", "Enthusiastic"];
-const lengthOptions = ["Short", "Medium", "Long"];
 function countWords(text: string) {
   return text.trim() ? text.trim().split(/\s+/).length : 0;
 }
@@ -100,40 +29,122 @@ function initials(name: string) {
 
 export default function PostStudio({
   profile,
+  repositories,
 }: {
   profile: GitHubProfile | null;
+  repositories: GitHubRepository[] | null;
 }) {
-  const [repoFilter, setRepoFilter] = useState("all");
-  const [selectedRepo, setSelectedRepo] = useState(stories[0].repo);
-  const [drafts, setDrafts] = useState(() =>
-    Object.fromEntries(stories.map((story) => [story.repo, story.draft])),
-  );
+  const [selectedRepoName, setSelectedRepoName] = useState("");
+  const [commits, setCommits] = useState<GitHubCommit[]>([]);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [tone, setTone] = useState(toneOptions[0]);
-  const [length, setLength] = useState("Medium");
-  const story = stories.find((s) => s.repo === selectedRepo) ?? stories[0];
-  const draft = drafts[story.repo];
-  const visibleStories =
-    repoFilter === "all" ? stories : stories.filter((s) => s.repo === repoFilter);
+  const [tone, setTone] = useState(toneOptions[0].value);
+  const [isLoadingCommits, setIsLoadingCommits] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [repositoryError, setRepositoryError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const draftSectionRef = useRef<HTMLElement>(null);
+  const previewRef = useRef<HTMLElement>(null);
+
+  const selectedRepo = repositories?.find((repository) => repository.name === selectedRepoName);
+  const draft = selectedRepoName ? drafts[selectedRepoName] ?? "" : "";
   const authorName = profile?.name || profile?.login || "GitHub account";
   const authorDetails = profile
     ? `@${profile.login}${profile.bio ? ` · ${profile.bio}` : ""}`
     : "GitHub profile unavailable";
 
+  async function selectRepository(repositoryName: string) {
+    setSelectedRepoName(repositoryName);
+    setCommits([]);
+    setShowPreview(false);
+    setRepositoryError("");
+    setActionError("");
+    if (!repositoryName) return;
+
+    setIsLoadingCommits(true);
+    try {
+      const response = await fetch(
+        `/api/repository-commits?repo=${encodeURIComponent(repositoryName)}`,
+      );
+      const result = (await response.json()) as {
+        commits?: GitHubCommit[];
+        error?: string;
+      };
+      if (!response.ok) throw new Error(result.error || "Could not load repository commits.");
+      setCommits(result.commits ?? []);
+      if (result.commits?.length) {
+        window.setTimeout(
+          () => draftSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+          0,
+        );
+      }
+    } catch (requestError) {
+      setRepositoryError(
+        requestError instanceof Error ? requestError.message : "Could not load repository commits.",
+      );
+    } finally {
+      setIsLoadingCommits(false);
+    }
+  }
+
   function updateDraft(text: string) {
-    setDrafts((current) => ({ ...current, [story.repo]: text }));
+    if (!selectedRepoName) return;
+    setDrafts((current) => ({ ...current, [selectedRepoName]: text }));
     setSaved(false);
   }
 
+  async function runAiAction(action: RewriteAction) {
+    if (!selectedRepo || commits.length === 0) return;
+
+    setIsGenerating(true);
+    setActionError("");
+    try {
+      const response = await fetch("/api/generate-post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectName: selectedRepo.name,
+          commits: commits.slice(0, 30).map((commit) => commit.message),
+          readme: selectedRepo.description ?? "",
+          tone,
+          action,
+          draft: action === "generate" ? undefined : draft,
+        }),
+      });
+      const result = (await response.json()) as { post?: string; error?: string };
+      if (!response.ok || !result.post) {
+        throw new Error(result.error || "Could not generate a post.");
+      }
+      updateDraft(result.post);
+      setShowPreview(false);
+    } catch (requestError) {
+      setActionError(
+        requestError instanceof Error ? requestError.message : "Could not generate a post.",
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
   async function copyPost() {
+    if (!draft) return;
     try {
       await navigator.clipboard.writeText(draft);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      window.setTimeout(() => setCopied(false), 2000);
     } catch {
       setCopied(false);
     }
+  }
+
+  function proceedToPreview() {
+    setShowPreview(true);
+    window.setTimeout(
+      () => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      0,
+    );
   }
 
   return (
@@ -143,194 +154,190 @@ export default function PostStudio({
           <h1>Turn your commits into a story</h1>
           <p>Start with real work. Make it sound like you.</p>
         </div>
-        <span className="save-status" aria-live="polite">
-          {saved ? "✓  Draft saved just now" : "Unsaved changes"}
-        </span>
-        <button type="button" className="btn btn-secondary" onClick={() => setSaved(true)}>
-          Save draft
-        </button>
-        <button type="button" className="btn btn-primary" onClick={copyPost}>
-          {copied ? "Copied ✓" : "Copy post ↗"}
-        </button>
       </div>
 
-      <div className="studio-grid">
-        <div className="page-column">
-          <h2>Choose your story</h2>
+      <section className="story-selection-section" aria-labelledby="choose-story-heading">
+        <div className="story-selection-header">
+          <h2 id="choose-story-heading">Choose your story</h2>
+          <label className="field story-repository-select">
+            <span className="sr-only">Repository</span>
+            <select
+              aria-label="Repository"
+              value={selectedRepoName}
+              onChange={(event) => void selectRepository(event.target.value)}
+              disabled={!repositories?.length || isLoadingCommits}
+            >
+              <option value="">
+                {repositories === null ? "GitHub unavailable" : "Choose a repository"}
+              </option>
+              {repositories?.map((repository) => (
+                <option key={repository.id} value={repository.name}>
+                  {repository.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
-          <div className="panel story-panel">
-            <div className="panel-label">FROM YOUR REPOSITORIES</div>
-            <label className="field">
-              <span aria-hidden="true">▤</span>
-              <select
-                aria-label="Repository"
-                value={repoFilter}
-                onChange={(e) => setRepoFilter(e.target.value)}
-              >
-                <option value="all">All repositories</option>
-                {stories.map((s) => (
-                  <option key={s.repo} value={s.repo}>
-                    {s.repo}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {visibleStories.map((s) => {
-              const selected = s.repo === story.repo;
-              return (
-                <button
-                  key={s.repo}
-                  type="button"
-                  className={selected ? "story-option selected" : "story-option"}
-                  aria-pressed={selected}
-                  onClick={() => setSelectedRepo(s.repo)}
-                >
-                  <span className="story-repo">
-                    {selected ? "✓" : "⌁"}  {s.repo}
-                  </span>
-                  <span className="story-title">{s.title}</span>
-                  <span className="story-meta">
-                    {s.time} · {s.commitCount} commits
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="panel evidence-panel">
-            <div className="evidence-heading">
-              <span>Source evidence</span>
-              <span aria-hidden="true">⌁</span>
+        {isLoadingCommits && <p className="story-feedback">Loading commits…</p>}
+        {!isLoadingCommits && selectedRepoName && commits.length === 0 && !repositoryError && (
+          <p className="story-feedback">No commits found for this repository.</p>
+        )}
+        {commits.length > 0 && (
+          <div className="panel selected-commits-panel">
+            <div className="selected-commits-heading">
+              <span>Recent commits from {selectedRepoName}</span>
+              <span>{commits.length} loaded</span>
             </div>
-            <span className="status-badge">{story.commitCount} commits linked</span>
-            <p className="evidence-note">{story.span}</p>
-            <hr className="divider" />
-            <ul className="commit-list">
-              {story.commits.map((commit) => (
+            <ul className="selected-commits-list">
+              {commits.map((commit) => (
                 <li key={commit.sha}>
-                  <div className="commit-message">{commit.message}</div>
-                  <div className="commit-meta">
-                    {commit.sha} · {story.repo}
-                  </div>
+                  <a href={commit.url} target="_blank" rel="noreferrer">
+                    {commit.message}
+                  </a>
+                  <span>{commit.sha.slice(0, 7)}</span>
                 </li>
               ))}
             </ul>
-            <a href="#" className="text-link">
-              View all commits ↗
-            </a>
           </div>
-        </div>
+        )}
+        {!repositories?.length && repositories !== null && (
+          <p className="story-feedback">No public repositories are available to choose.</p>
+        )}
+        {repositoryError && <p className="studio-error" role="alert">{repositoryError}</p>}
+      </section>
 
-        <div className="page-column">
-          <h2>Your draft</h2>
+      {selectedRepo && commits.length > 0 && (
+        <>
+          <section className="draft-workflow-section" ref={draftSectionRef} aria-labelledby="your-draft-heading">
+            <h2 id="your-draft-heading">Your draft</h2>
+            <div className="draft-workflow-grid">
+              <div className="panel draft-panel draft-editor-panel">
+                <div className="draft-toolbar">
+                  <span>{selectedRepo.name}</span>
+                  <span className="draft-state">Draft</span>
+                </div>
+                <label className="editor">
+                  <span className="sr-only">Post draft</span>
+                  <textarea
+                    aria-label="Post draft"
+                    value={draft}
+                    onChange={(event) => updateDraft(event.target.value)}
+                    placeholder="Generate a draft with the AI writing tools, or start writing here."
+                  />
+                  <span className="editor-status">
+                    <span>Edit your story here</span>
+                    <span>{countWords(draft)} words · {draft.length} characters</span>
+                  </span>
+                </label>
 
-          <div className="panel draft-panel">
-            <div className="draft-toolbar">
-              <span>{story.title}</span>
-              <span className="draft-state">Draft</span>
-            </div>
-            <hr className="divider" />
-            <div className="editor">
-              <textarea
-                aria-label="Post draft"
-                value={draft}
-                onChange={(e) => updateDraft(e.target.value)}
-              />
-              <div className="editor-status">
-                <span>Edit your story here</span>
-                <span>
-                  {countWords(draft)} words · {draft.length} characters
-                </span>
+                <a className="attachment repo-embed-link" href={selectedRepo.url} target="_blank" rel="noreferrer">
+                  <span className="attachment-repo">⌁  {selectedRepo.name} ↗</span>
+                  <span className="attachment-description">
+                    {selectedRepo.description || "View this repository and its source on GitHub."}
+                  </span>
+                  <span className="attachment-meta">github.com · Public repository</span>
+                </a>
               </div>
-            </div>
-            <div className="button-row">
-              <button type="button" className="btn btn-secondary">
-                ✦  Refine tone
-              </button>
-              <button type="button" className="btn btn-secondary">
-                Shorten
-              </button>
-              <button type="button" className="btn btn-secondary">
-                Try a new hook
-              </button>
-            </div>
-          </div>
 
-          <div className="panel settings-panel">
-            <div className="panel-title">Generation settings</div>
-            <div className="settings-row">
-              <label className="setting">
-                <span className="setting-label">Tone</span>
-                <span className="field">
-                  <select value={tone} onChange={(e) => setTone(e.target.value)}>
-                    {toneOptions.map((option) => (
-                      <option key={option}>{option}</option>
-                    ))}
-                  </select>
-                </span>
-              </label>
-              <label className="setting narrow">
-                <span className="setting-label">Length</span>
-                <span className="field">
-                  <select value={length} onChange={(e) => setLength(e.target.value)}>
-                    {lengthOptions.map((option) => (
-                      <option key={option}>{option}</option>
-                    ))}
-                  </select>
-                </span>
-              </label>
+              <aside className="panel ai-actions-panel" aria-label="AI writing actions">
+                <div className="panel-title">AI writing tools</div>
+                <label className="setting">
+                  <span className="setting-label">Voice</span>
+                  <span className="field">
+                    <select value={tone} onChange={(event) => setTone(event.target.value)}>
+                      {toneOptions.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => void runAiAction(draft ? "rewrite" : "generate")}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? "Working…" : draft ? "Rewrite in this voice" : "Generate draft"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => void runAiAction("shorten")}
+                  disabled={!draft || isGenerating}
+                >
+                  Shorten post
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => void runAiAction("new_hook")}
+                  disabled={!draft || isGenerating}
+                >
+                  Try a new hook
+                </button>
+                {actionError && <p className="studio-error" role="alert">{actionError}</p>}
+                <button
+                  type="button"
+                  className="btn btn-primary proceed-button"
+                  onClick={proceedToPreview}
+                  disabled={!draft || isGenerating}
+                >
+                  Continue to preview →
+                </button>
+              </aside>
             </div>
-            <div className="generate-row">
-              <span>Use linked commit evidence</span>
-              <button type="button" className="btn btn-primary">
-                ✦  Regenerate draft
-              </button>
-            </div>
-          </div>
-        </div>
+          </section>
 
-        <div className="page-column preview-column">
-          <h2>Post preview</h2>
-
-          <div className="panel preview-panel">
-            <div className="author">
-              <div className="author-avatar">{initials(authorName)}</div>
-              <div className="author-details">
-                <span className="author-name">{authorName}</span>
-                <span>{authorDetails}</span>
-                <span>Just now · 🌐</span>
+          {showPreview && (
+            <section className="post-preview-section" ref={previewRef} aria-labelledby="preview-heading">
+              <h2 id="preview-heading">Post preview</h2>
+              <div className="panel preview-panel">
+                <div className="author">
+                  <div className="author-avatar">{initials(authorName)}</div>
+                  <div className="author-details">
+                    <span className="author-name">{authorName}</span>
+                    <span>{authorDetails}</span>
+                    <span>LinkedIn · Just now</span>
+                  </div>
+                </div>
+                <p className="preview-body">{draft}</p>
+                <a className="attachment repo-embed-link" href={selectedRepo.url} target="_blank" rel="noreferrer">
+                  <span className="attachment-repo">⌁  {selectedRepo.name} ↗</span>
+                  <span className="attachment-description">
+                    {selectedRepo.description || "View this repository and its source on GitHub."}
+                  </span>
+                  <span className="attachment-meta">github.com · Public repository</span>
+                </a>
+                <div className="social-actions" aria-hidden="true">
+                  <span>♧ Like</span>
+                  <span>○ Comment</span>
+                  <span>↻ Repost</span>
+                  <span>↗ Send</span>
+                </div>
               </div>
-              <span className="author-more" aria-hidden="true">
-                •••
-              </span>
-            </div>
-            <p className="preview-body">{draft}</p>
-            <div className="attachment">
-              <span className="attachment-repo">⌁  {story.repo}</span>
-              <span className="attachment-description">{story.repoDescription}</span>
-              <span className="attachment-meta">github.com · Public repository</span>
-            </div>
-            <hr className="divider" />
-            <div className="social-actions" aria-hidden="true">
-              <span>♧ Like</span>
-              <span>○ Comment</span>
-              <span>↻ Repost</span>
-              <span>↗ Send</span>
-            </div>
-          </div>
-
-          <div className="panel review-panel">
-            <strong>✓  Ready for your final review</strong>
-            <p>
-              Check the details, add your voice, then copy your post to share on LinkedIn.
-            </p>
-          </div>
-        </div>
-      </div>
+              <div className="panel review-panel">
+                <strong>✓  Ready for your final review</strong>
+                <p>Check the details, add your voice, then copy your post to share on LinkedIn.</p>
+              </div>
+              <div className="post-preview-actions">
+                <span className="save-status" aria-live="polite">
+                  {saved ? "✓  Draft saved just now" : "Unsaved changes"}
+                </span>
+                <button type="button" className="btn btn-secondary" onClick={() => setSaved(true)}>
+                  Save draft
+                </button>
+                <button type="button" className="btn btn-primary" onClick={copyPost} disabled={!draft}>
+                  {copied ? "Copied ✓" : "Copy post ↗"}
+                </button>
+              </div>
+            </section>
+          )}
+        </>
+      )}
 
       <p className="studio-footnote">
-        AI drafts are grounded in your repository evidence. Review before sharing; nothing is
+        AI drafts are grounded in your repository commits. Review before sharing; nothing is
         published automatically.
       </p>
     </div>

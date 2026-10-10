@@ -873,6 +873,160 @@ a.draft-btn {
   align-items: start;
 }
 
+.story-selection-section,
+.draft-workflow-section,
+.post-preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.story-selection-section {
+  margin-bottom: 28px;
+}
+
+.story-selection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.story-selection-header h2,
+.draft-workflow-section > h2,
+.post-preview-section > h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.story-repository-select {
+  width: min(100%, 360px);
+}
+
+.selected-commits-panel {
+  gap: 12px;
+  padding: 16px;
+}
+
+.selected-commits-heading,
+.selected-commits-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.selected-commits-heading {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.selected-commits-heading span:last-child,
+.selected-commits-list li > span {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.selected-commits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.selected-commits-list li {
+  min-width: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--panel-border);
+  font-size: 12px;
+}
+
+.selected-commits-list a {
+  overflow: hidden;
+  color: var(--text);
+  text-overflow: ellipsis;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.selected-commits-list a:hover {
+  color: var(--link);
+}
+
+.draft-workflow-section,
+.post-preview-section {
+  scroll-margin-top: 24px;
+  margin-bottom: 28px;
+}
+
+.post-preview-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.post-preview-actions .save-status {
+  margin-right: auto;
+}
+
+.draft-workflow-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(250px, 0.65fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.draft-editor-panel {
+  min-width: 0;
+}
+
+.draft-editor-panel .editor textarea {
+  min-height: 300px;
+}
+
+.repo-embed-link {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.repo-embed-link:hover {
+  border-color: var(--muted);
+}
+
+.ai-actions-panel {
+  gap: 12px;
+  padding: 18px;
+}
+
+.ai-actions-panel .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.ai-actions-panel .proceed-button {
+  margin-top: 8px;
+}
+
+.story-feedback,
+.studio-error {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.studio-error {
+  color: var(--danger, #ff8585);
+}
+
 .page-column {
   display: flex;
   flex-direction: column;
@@ -2500,6 +2654,19 @@ a.draft-btn {
 @media (max-width: 880px) {
   .dashboard-page {
     flex-direction: column;
+  }
+
+  .draft-workflow-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .story-selection-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .story-repository-select {
+    width: 100%;
   }
 
   .workspace-main,

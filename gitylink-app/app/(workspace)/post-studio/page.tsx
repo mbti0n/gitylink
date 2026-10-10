@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getGitHubProfile } from "@/lib/github-profile";
+import { getGitHubRepositories } from "@/lib/github-repositories";
 import PostStudio from "./PostStudio";
 
 export const metadata: Metadata = {
@@ -18,6 +19,9 @@ export default function PostStudioPage() {
 }
 
 async function PostStudioWithGitHub() {
-  const profile = await getGitHubProfile();
-  return <PostStudio profile={profile} />;
+  const [profile, repositories] = await Promise.all([
+    getGitHubProfile(),
+    getGitHubRepositories(),
+  ]);
+  return <PostStudio profile={profile} repositories={repositories} />;
 }

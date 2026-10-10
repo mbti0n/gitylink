@@ -1,4 +1,6 @@
 import { cache } from "react";
+import { getGitHubProfile } from "@/lib/github-profile";
+import { getGitHubRepositories } from "@/lib/github-repositories";
 
 export type GitHubCommit = {
   sha: string;
@@ -82,3 +84,44 @@ export const getGitHubActivity = cache(async (limit: number): Promise<GitHubComm
     return null;
   }
 });
+
+export async function getGitHubRepositoryCommits(
+  repositoryName: string,
+  limit = 30,
+): Promise<GitHubCommit[] | null> {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) return null;
+
+  const [profile, repositories] = await Promise.all([
+    getGitHubProfile(),
+    getGitHubRepositories(),
+  ]);
+  const repository = repositories?.find((item) => item.name === repositoryName);
+  if (!profile || !repository) return null;
+
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${encodeURIComponent(profile.login)}/${encodeURIComponent(repository.name)}/commits?author=${encodeURIComponent(profile.login)}&per_page=${limit}`,
+      {
+        headers: { ...GITHUB_HEADERS, Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      },
+    );
+    if (!response.ok) return null;
+
+    const commits = (await response.json()) as GitHubCommitResponse[];
+    return commits.flatMap((commit) =>
+      commit.commit.author
+        ? [{
+            sha: commit.sha,
+            repo: repository.name,
+            url: commit.html_url,
+            date: commit.commit.author.date,
+            message: commit.commit.message.split("\n", 1)[0],
+          }]
+        : [],
+    );
+  } catch {
+    return null;
+  }
+}
