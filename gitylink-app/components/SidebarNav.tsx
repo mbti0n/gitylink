@@ -13,6 +13,7 @@ const navItems: NavItem[] = [
   { href: "/", icon: "◉", label: "Overview" },
   { href: "/repositories", icon: "▣", label: "Repositories" },
   { href: "/skills", icon: "♫", label: "Skills Explorer" },
+  { href: "/rhythm", icon: "♪", label: "Rhythm Arcade" },
 ];
 
 function NavLink({ item, compact }: { item: NavItem; compact?: boolean }) {
