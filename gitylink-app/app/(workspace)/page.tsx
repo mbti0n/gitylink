@@ -176,9 +176,12 @@ async function LibraryOverview() {
       <Reveal>
         <section className="record-activity-section">
           <div className="record-section-heading">
-            <div>
-              <p className="record-eyebrow">The making of the music</p>
-              <h2>Your year in commits</h2>
+            <div className="record-heading-with-cat">
+              <BeatCat />
+              <div>
+                <p className="record-eyebrow">The making of the music</p>
+                <h2>Your year in commits</h2>
+              </div>
             </div>
             <span className="record-activity-total">
               {calendar
