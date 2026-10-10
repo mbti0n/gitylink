@@ -1,69 +1,215 @@
-import Image from "next/image";
+const metrics = [
+  { icon: "▤", value: "12", label: "Repositories tracked", tone: "blue" },
+  { icon: "⌁", value: "148", label: "Commits this month", tone: "green" },
+  { icon: "✦", value: "8", label: "Post opportunities", tone: "amber" },
+  { icon: "◈", value: "24", label: "Skills discovered", tone: "blue" },
+];
+
+const heatmapRows = [
+  [0, 1, 0, 2, 3, 3, 1],
+  [2, 3, 1, 2, 3, 2, 1],
+  [0, 1, 0, 2, 3, 2, 1],
+  [2, 3, 1, 2, 2, 3, 1],
+  [0, 1, 0, 2, 3, 2, 1],
+  [2, 3, 1, 2, 3, 1, 0],
+];
+
+const shareCards = [
+  {
+    repo: "portfolio-website",
+    time: "2 hours ago",
+    title: "Shipped my new personal portfolio",
+    description:
+      "You built responsive pages, refined animations, and deployed the finished site.",
+    tags: ["React", "TypeScript"],
+  },
+  {
+    repo: "task-manager-api",
+    time: "Yesterday",
+    title: "Finally fixed JWT authentication",
+    description:
+      "After several debugging sessions, your authorization flow is working end to end.",
+    tags: ["Node.js", "Security"],
+  },
+  {
+    repo: "docker-homelab",
+    time: "3 days ago",
+    title: "Automated my development environment",
+    description:
+      "You added container configuration and reduced manual environment setup.",
+    tags: ["Docker", "DevOps"],
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="dashboard-page">
+      <aside className="sidebar">
+        <div className="brand-wrap">
+          <div className="brand-mark">↗</div>
+          <div className="brand-text">
+            <span className="brand-title">commit</span>
+            <span className="brand-subtitle">to post</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="sidebar-section">
+          <div className="section-label">WORKSPACE</div>
+          <nav className="nav-list" aria-label="Sidebar navigation">
+            <button className="nav-item active" type="button">
+              <span className="nav-icon">▦</span>
+              <span>Overview</span>
+            </button>
+            <button className="nav-item" type="button">
+              <span className="nav-icon">◷</span>
+              <span>Activity</span>
+            </button>
+            <button className="nav-item" type="button">
+              <span className="nav-icon">✦</span>
+              <span>Post studio</span>
+            </button>
+            <button className="nav-item" type="button">
+              <span className="nav-icon">▤</span>
+              <span>Repositories</span>
+            </button>
+            <button className="nav-item" type="button">
+              <span className="nav-icon">◈</span>
+              <span>Skills explorer</span>
+            </button>
+            <button className="nav-item" type="button">
+              <span className="nav-icon">◎</span>
+              <span>Career roadmap</span>
+            </button>
+          </nav>
         </div>
-      </main>
-    </div>
+
+        <div className="sidebar-section sidebar-bottom">
+          <div className="section-label">SETTINGS</div>
+          <button className="nav-item compact" type="button">
+            <span className="nav-icon">⚙</span>
+            <span>Preferences</span>
+          </button>
+          <button className="nav-item compact" type="button">
+            <span className="nav-icon">ⓘ</span>
+            <span>Help &amp; feedback</span>
+          </button>
+        </div>
+
+        <div className="account-card">
+          <div className="avatar">JD</div>
+          <div className="account-meta">
+            <span className="account-name">Your account</span>
+            <span className="account-status">GitHub connected</span>
+          </div>
+        </div>
+      </aside>
+
+      <section className="content-panel">
+        <header className="topbar">
+          <div className="crumbs">Workspace / Overview</div>
+          <div className="search-box">⌕ Search repositories, posts, skills...</div>
+        </header>
+
+        <div className="hero-row">
+          <div>
+            <h1>Good evening, developer 👋</h1>
+            <p>Turn your work into stories worth sharing.</p>
+          </div>
+          <button type="button" className="primary-btn">+ Create a post</button>
+        </div>
+
+        <div className="stats-grid">
+          {metrics.map((metric) => (
+            <article key={metric.label} className={`stat-card tone-${metric.tone}`}>
+              <div className="metric-icon">{metric.icon}</div>
+              <div className="metric-number">{metric.value}</div>
+              <div className="metric-label">{metric.label}</div>
+            </article>
+          ))}
+        </div>
+
+        <section className="activity-block">
+          <div className="activity-header">
+            <div>
+              <h2>Your development activity</h2>
+              <p>Across all your connected repositories</p>
+            </div>
+          </div>
+
+          <div className="activity-layout">
+            <div className="overview-card">
+              <div className="card-header">
+                <span>Contribution overview</span>
+                <span className="muted">Past 12 weeks</span>
+              </div>
+
+              <div className="heatmap" aria-label="Commit activity chart">
+                {heatmapRows.map((row, rowIndex) => (
+                  <div key={rowIndex} className="heatmap-row">
+                    {row.map((cell, colIndex) => (
+                      <span
+                        key={`${rowIndex}-${colIndex}`}
+                        className={`heat-cell level-${cell}`}
+                        aria-label={`Activity level ${cell}`}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+
+              <div className="legend">
+                <span>Less</span>
+                <div className="legend-scale">
+                  <span className="heat-cell level-0" />
+                  <span className="heat-cell level-1" />
+                  <span className="heat-cell level-2" />
+                  <span className="heat-cell level-3" />
+                </div>
+                <span>More</span>
+              </div>
+            </div>
+
+            <aside className="insight-card">
+              <div className="insight-title">✦ This week&apos;s highlight</div>
+              <div className="story-tag">Suggested story</div>
+              <div className="story-line">You turned 4 days of debugging</div>
+              <div className="story-line">into a working auth flow.</div>
+              <p>A great learning milestone to share.</p>
+              <button type="button" className="secondary-btn">Generate story →</button>
+            </aside>
+          </div>
+        </section>
+
+        <div className="share-header">
+          <h3>Ready to share</h3>
+          <a href="#">View all →</a>
+        </div>
+
+        <div className="share-grid">
+          {shareCards.map((card) => (
+            <article key={card.repo} className="share-card">
+              <div className="share-topline">
+                <span className="repo-bullet">⌁</span>
+                <span className="repo-name">{card.repo}</span>
+                <span className="repo-time">{card.time}</span>
+              </div>
+
+              <h4>{card.title}</h4>
+              <p>{card.description}</p>
+
+              <div className="tag-row">
+                {card.tags.map((tag) => (
+                  <span key={tag} className="tag">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              <button type="button" className="draft-btn">Draft post →</button>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }
