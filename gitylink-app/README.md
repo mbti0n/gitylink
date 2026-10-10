@@ -1,4 +1,8 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Repo Radio
+
+Repo Radio turns GitHub repositories into album covers and the primary languages
+used across them into a skills setlist. The workspace has three destinations:
+Overview, Repositories, and Skills Explorer.
 
 ## Getting Started
 
@@ -23,8 +27,10 @@ Copy `.env.example` to `.env.local` and configure these values:
 - `AUTH_BASE_URL`: the app origin, such as `http://localhost:3000` in development.
 - `AUTH_SECRET`: a random secret with at least 32 characters. For example, generate one with `openssl rand -base64 32`.
 - `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: create a GitHub OAuth App and set its callback URL to `${AUTH_BASE_URL}/api/auth/github/callback`. The app requests `read:user` and `public_repo`.
+- `GEMINI_API_KEY`: enables on-demand AI-generated repository cover art.
+- `GEMINI_IMAGE_MODEL`: optional image model override; defaults to `gemini-2.5-flash-image`.
 
-Restart the development server after changing environment variables. Connect or disconnect GitHub from the overview page. Its access token is encrypted and stored in an HTTP-only cookie; it is not sent to browser JavaScript. The optional `GITHUB_TOKEN` is only used by the standalone `npm run github` smoke test. Project drafts are generated for copying or saving; there is no third-party publishing integration.
+Restart the development server after changing environment variables. Connect or disconnect GitHub from the overview page. Its access token is encrypted and stored in an HTTP-only cookie; it is not sent to browser JavaScript. Repository cover art is generated only when requested and saved in the current browser. The optional `GITHUB_TOKEN` is only used by the standalone `npm run github` smoke test.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

@@ -4,6 +4,7 @@ import {
   createHash,
   randomBytes,
 } from "node:crypto";
+import { io } from "next/cache";
 import { cookies } from "next/headers";
 
 export type OAuthSession = {
@@ -72,6 +73,7 @@ export async function getOAuthSession(): Promise<OAuthSession | null> {
   const value = (await cookies()).get(sessionCookieName)?.value;
   if (!value) return null;
 
+  await io();
   try {
     const decoded = decryptSession(value);
     if (!isOAuthSession(decoded) || decoded.expiresAt <= Date.now()) {

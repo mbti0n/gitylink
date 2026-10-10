@@ -30,7 +30,7 @@ export default function WorkspaceShell({
   }, [mobileOpen]);
 
   return (
-    <main className={`dashboard-page${collapsed ? " is-collapsed" : ""}`}>
+    <main className={`dashboard-page record-store${collapsed ? " is-collapsed" : ""}`}>
       {mobileOpen && (
         <button
           className="sidebar-backdrop"

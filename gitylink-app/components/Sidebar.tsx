@@ -1,25 +1,21 @@
 import { Suspense } from "react";
 import { getGitHubInitials, getGitHubProfile } from "@/lib/github-profile";
-import SidebarNav, { SettingsLink } from "./SidebarNav";
+import SidebarNav from "./SidebarNav";
 
 export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="brand-wrap">
-        <div className="brand-mark">↗</div>
+        <div className="brand-mark">♫</div>
         <div className="brand-text">
-          <span className="brand-title">gitylink</span>
+          <span className="brand-title">Repo Radio</span>
+          <span className="brand-subtitle">your code, on wax</span>
         </div>
       </div>
 
       <div className="sidebar-section">
         <div className="section-label">WORKSPACE</div>
         <SidebarNav />
-      </div>
-
-      <div className="sidebar-section sidebar-bottom">
-        <div className="section-label">SETTINGS</div>
-        <SettingsLink />
       </div>
 
       <Suspense

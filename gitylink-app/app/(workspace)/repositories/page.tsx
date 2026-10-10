@@ -4,7 +4,7 @@ import { getGitHubRepositories } from "@/lib/github-repositories";
 import Repositories from "./Repositories";
 
 export const metadata: Metadata = {
-  title: "Repositories · Gitylink",
+  title: "Repositories",
 };
 
 export default function RepositoriesPage() {

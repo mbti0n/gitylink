@@ -10,11 +10,9 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { href: "/", icon: "▦", label: "Overview" },
-  { href: "/post-studio", icon: "✦", label: "Post studio" },
-  { href: "/repositories", icon: "▤", label: "Repositories" },
-  { href: "/skills", icon: "◈", label: "Skills explorer" },
-  { href: "/roadmap", icon: "◎", label: "Career roadmap" },
+  { href: "/", icon: "◉", label: "Overview" },
+  { href: "/repositories", icon: "▣", label: "Repositories" },
+  { href: "/skills", icon: "♫", label: "Skills Explorer" },
 ];
 
 function NavLink({ item, compact }: { item: NavItem; compact?: boolean }) {
@@ -36,10 +34,6 @@ function NavLink({ item, compact }: { item: NavItem; compact?: boolean }) {
       <span>{item.label}</span>
     </Link>
   );
-}
-
-export function SettingsLink() {
-  return <NavLink item={{ href: "/preferences", icon: "⚙", label: "Preferences" }} compact />;
 }
 
 export default function SidebarNav() {

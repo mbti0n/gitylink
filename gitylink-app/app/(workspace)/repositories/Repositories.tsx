@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import RepositoryAlbumArt from "@/components/RepositoryAlbumArt";
 import type { GitHubRepository } from "@/lib/github-repositories";
 
 export default function Repositories({
@@ -12,91 +13,100 @@ export default function Repositories({
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [isRefreshing, startRefresh] = useTransition();
-  const filteredRepositories = (repositories ?? []).filter((repository) =>
-    `${repository.name} ${repository.language ?? ""} ${repository.description ?? ""}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase()),
+  const filteredRepositories = useMemo(
+    () =>
+      (repositories ?? []).filter((repository) =>
+        `${repository.name} ${repository.language ?? ""} ${repository.description ?? ""}`
+          .toLowerCase()
+          .includes(query.trim().toLowerCase()),
+      ),
+    [repositories, query],
   );
 
   return (
-    <div className="page-content repositories-content">
-      <div className="page-heading">
-        <div className="page-intro">
-          <h1>Your repositories</h1>
-          <p>Manage the projects that power your posts and skill evidence.</p>
+    <div className="record-page">
+      <header className="record-page-heading">
+        <div>
+          <p className="record-eyebrow">Your record shelf</p>
+          <h1>Repository albums</h1>
+          <p>Every repo has a sound. Give yours a one-of-one cover.</p>
         </div>
-      </div>
+        <div className="record-page-stamp" aria-hidden="true">VOL. 01</div>
+      </header>
 
-      <div className="repository-toolbar">
-        <a
-          className="btn btn-primary"
-          href="https://github.com/settings/installations"
-          target="_blank"
-          rel="noreferrer"
-        >
-          + Add repositories
-        </a>
-        <button
-          className="btn btn-secondary"
-          type="button"
-          onClick={() => startRefresh(() => router.refresh())}
-          disabled={isRefreshing}
-        >
-          ↻ {isRefreshing ? "Syncing…" : "Sync now"}
-        </button>
-        <label className="field repository-search">
+      <div className="record-toolbar">
+        <label className="record-search">
           <span aria-hidden="true">⌕</span>
           <input
-            aria-label="Search repositories"
-            placeholder="Search repositories..."
+            aria-label="Search repository albums"
+            placeholder="Find an album..."
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <span className="repository-sync" aria-live="polite">
+        <span className="record-count">
           {repositories === null
-            ? "GitHub unavailable"
-            : `${repositories.length} public repositories`}
+            ? "Waiting for GitHub"
+            : `${repositories.length} ${repositories.length === 1 ? "album" : "albums"} in rotation`}
         </span>
+        <button
+          className="record-sync"
+          type="button"
+          onClick={() => startRefresh(() => router.refresh())}
+          disabled={isRefreshing}
+        >
+          {isRefreshing ? "Syncing…" : "↻ Sync shelf"}
+        </button>
       </div>
 
-      <div className="repository-list" aria-live="polite">
-        {filteredRepositories.map((repository) => (
-          <article className="repository-card" key={repository.id}>
-            <div className="repository-card-heading">
-              <h2>
-                <a href={repository.url} target="_blank" rel="noreferrer">
-                  {repository.name}
-                </a>
-              </h2>
-              <span className="repository-status">Public</span>
-            </div>
-            <p className="repository-summary">
-              {repository.description || "No description provided."}
-            </p>
-            <p className="repository-meta">
-              {repository.language || "No primary language"} <span aria-hidden="true">·</span>{" "}
-              Updated {new Date(repository.updatedAt).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-                timeZone: "UTC",
-              })} <span aria-hidden="true">·</span> {repository.stars} stars
-            </p>
-          </article>
-        ))}
-        {repositories === null ? (
-          <p className="repository-empty">
-            Couldn’t load repositories. Connect GitHub from the overview page or reconnect your
-            account.
-          </p>
-        ) : filteredRepositories.length === 0 ? (
-          <p className="repository-empty">
-            {query ? `No repositories match “${query}”.` : "No public repositories found for this account."}
-          </p>
-        ) : null}
-      </div>
+      {repositories === null ? (
+        <div className="record-empty">
+          <span className="empty-record" aria-hidden="true">◉</span>
+          <h2>Your shelf is waiting for GitHub</h2>
+          <p>Connect your account on the overview page to bring your repositories into rotation.</p>
+        </div>
+      ) : filteredRepositories.length === 0 ? (
+        <div className="record-empty">
+          <span className="empty-record" aria-hidden="true">◌</span>
+          <h2>{query ? "No albums found" : "Nothing on the shelf yet"}</h2>
+          <p>{query ? "Try a different search." : "Public repositories you own will show up here."}</p>
+        </div>
+      ) : (
+        <div className="album-grid">
+          {filteredRepositories.map((repository, index) => (
+            <article className="album-card" key={repository.id}>
+              <RepositoryAlbumArt repository={repository} />
+              <div className="album-card-copy">
+                <div className="album-card-overline">
+                  <span>NO. {String(index + 1).padStart(2, "0")}</span>
+                  <span>{repository.language || "INSTRUMENTAL"}</span>
+                </div>
+                <h2>
+                  <a href={repository.url} target="_blank" rel="noreferrer">
+                    {repository.name}
+                  </a>
+                </h2>
+                <p>{repository.description || "An untitled project, waiting for its liner notes."}</p>
+                <div className="album-card-meta">
+                  <span>★ {repository.stars}</span>
+                  <span>⑂ {repository.forks}</span>
+                  <span>
+                    Updated {new Date(repository.updatedAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      year: "numeric",
+                      timeZone: "UTC",
+                    })}
+                  </span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+      <p className="cover-cost-note">
+        Cover art is generated when you ask for it with your configured Gemini image model.
+      </p>
     </div>
   );
 }

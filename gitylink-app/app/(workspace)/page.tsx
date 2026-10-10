@@ -1,178 +1,215 @@
-import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import GitHubContributionGraph from "@/components/GitHubContributionGraph";
+import RepositoryAlbumArt from "@/components/RepositoryAlbumArt";
 import { getGitHubContributionCalendar } from "@/lib/github-contributions";
 import { getGitHubProfile } from "@/lib/github-profile";
+import { getGitHubRepositories } from "@/lib/github-repositories";
 import { getOAuthSession } from "@/lib/provider-auth";
 import IntegrationMenus from "./IntegrationMenus";
 
-const metrics = [
-  { icon: "▤", value: "12", label: "Repositories tracked", tone: "blue" },
-  { icon: "⌁", value: "148", label: "Commits this month", tone: "green" },
-  { icon: "✦", value: "8", label: "Post opportunities", tone: "amber" },
-  { icon: "◈", value: "24", label: "Skills discovered", tone: "blue" },
-];
-
-const shareCards = [
-  {
-    repo: "portfolio-website",
-    time: "2 hours ago",
-    title: "Shipped my new personal portfolio",
-    description:
-      "You built responsive pages, refined animations, and deployed the finished site.",
-    tags: ["React", "TypeScript"],
-  },
-  {
-    repo: "task-manager-api",
-    time: "Yesterday",
-    title: "Finally fixed JWT authentication",
-    description:
-      "After several debugging sessions, your authorization flow is working end to end.",
-    tags: ["Node.js", "Security"],
-  },
-  {
-    repo: "docker-homelab",
-    time: "3 days ago",
-    title: "Automated my development environment",
-    description:
-      "You added container configuration and reduced manual environment setup.",
-    tags: ["Docker", "DevOps"],
-  },
-];
+export const metadata: Metadata = {
+  title: "Overview",
+};
 
 export default function Home() {
   return (
     <section className="content-panel">
-      <div className="hero-row">
-        <div>
-          <Suspense fallback={<h1>Hi</h1>}>
-            <WelcomeHeading />
-          </Suspense>
-          <p>Turn your work into stories worth sharing.</p>
-        </div>
-        <Link href="/post-studio" className="primary-btn">
-          + Create a post
-        </Link>
-      </div>
-
+      <Suspense fallback={<OverviewLoading />}>
+        <LibraryOverview />
+      </Suspense>
       <Suspense
         fallback={
-          <div className="page-content">
-            <div className="panel integration-loading">Loading account connections…</div>
+          <div className="record-integration-loading">
+            Loading your GitHub connection…
           </div>
         }
       >
         <ConnectionOverview />
       </Suspense>
-
-      <div className="stats-grid">
-        {metrics.map((metric) => (
-          <article key={metric.label} className={`stat-card tone-${metric.tone}`}>
-            <div className="metric-icon">{metric.icon}</div>
-            <div className="metric-number">{metric.value}</div>
-            <div className="metric-label">{metric.label}</div>
-          </article>
-        ))}
-      </div>
-
-      <section className="activity-block">
-        <div className="activity-header">
-          <div>
-            <h2>Your development activity</h2>
-            <p>Across all your connected repositories</p>
-          </div>
-        </div>
-
-        <div className="activity-layout">
-          <Suspense fallback={<div className="overview-card">Loading contribution activity…</div>}>
-            <ContributionOverview />
-          </Suspense>
-
-          <aside className="insight-card">
-            <div className="insight-title">✦ This week&apos;s highlight</div>
-            <div className="story-tag">Suggested story</div>
-            <div className="story-line">You turned 4 days of debugging</div>
-            <div className="story-line">into a working auth flow.</div>
-            <p>A great learning milestone to share.</p>
-            <Link href="/post-studio" className="secondary-btn">
-              Generate story →
-            </Link>
-          </aside>
-        </div>
-      </section>
-
-      <div className="share-header">
-        <h3>Ready to share</h3>
-        <Link href="/activity">View all →</Link>
-      </div>
-
-      <div className="share-grid">
-        {shareCards.map((card) => (
-          <article key={card.repo} className="share-card">
-            <div className="share-topline">
-              <span className="repo-bullet">⌁</span>
-              <span className="repo-name">{card.repo}</span>
-              <span className="repo-time">{card.time}</span>
-            </div>
-
-            <h4>{card.title}</h4>
-            <p>{card.description}</p>
-
-            <div className="tag-row">
-              {card.tags.map((tag) => (
-                <span key={tag} className="tag">
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <Link href="/post-studio" className="draft-btn">
-              Draft post →
-            </Link>
-          </article>
-        ))}
-      </div>
     </section>
   );
 }
 
-async function WelcomeHeading() {
-  const profile = await getGitHubProfile();
-  const name = profile?.name || profile?.login || "there";
-  return <h1>Hi, {name}</h1>;
+async function LibraryOverview() {
+  const [profile, repositories, calendar] = await Promise.all([
+    getGitHubProfile(),
+    getGitHubRepositories(),
+    getGitHubContributionCalendar(),
+  ]);
+  const name = profile?.name || profile?.login || "music lover";
+  const featuredRepository = repositories?.[0];
+  const languageCount = new Set(
+    repositories?.map((repository) => repository.language).filter(Boolean),
+  ).size;
+  const totalStars =
+    repositories?.reduce((total, repository) => total + repository.stars, 0) ?? 0;
+
+  return (
+    <div className="record-overview">
+      <header className="record-hero">
+        <div className="record-hero-copy">
+          <p className="record-eyebrow">Your personal GitHub record store</p>
+          <h1>
+            Welcome to the
+            <br />
+            <span>sound of your code.</span>
+          </h1>
+          <p className="record-hero-description">
+            Every project has a rhythm. Turn your repositories into albums and
+            the tools behind them into songs.
+          </p>
+          <div className="record-hero-actions">
+            <Link href="/repositories" className="record-button record-button-primary">
+              Browse the albums <span aria-hidden="true">↗</span>
+            </Link>
+            <Link href="/skills" className="record-button record-button-quiet">
+              Explore the setlist
+            </Link>
+          </div>
+          <div className="record-welcome">
+            {profile ? `Now spinning for ${name}` : "Connect GitHub to start your collection"}
+          </div>
+        </div>
+
+        <div className="record-hero-art" aria-hidden="true">
+          <div className="record-sun" />
+          <div className="record-vinyl">
+            <div className="record-grooves" />
+            <div className="record-label">
+              <span>REPO</span>
+              <strong>RADIO</strong>
+              <span>YOUR CODE · SIDE A</span>
+            </div>
+          </div>
+          <span className="record-note note-one">♪</span>
+          <span className="record-note note-two">♫</span>
+          <span className="record-hero-caption">EST. IN YOUR TERMINAL</span>
+        </div>
+      </header>
+
+      <section className="record-stat-row" aria-label="Your collection at a glance">
+        <article>
+          <span className="record-stat-icon">▣</span>
+          <div><strong>{repositories?.length ?? "—"}</strong><span>albums in the crate</span></div>
+        </article>
+        <article>
+          <span className="record-stat-icon">♫</span>
+          <div><strong>{languageCount || "—"}</strong><span>sounds in your setlist</span></div>
+        </article>
+        <article>
+          <span className="record-stat-icon">✳</span>
+          <div><strong>{repositories ? totalStars.toLocaleString() : "—"}</strong><span>stars from the crowd</span></div>
+        </article>
+        <article>
+          <span className="record-stat-icon">↗</span>
+          <div>
+            <strong>{calendar?.totalContributions.toLocaleString() ?? "—"}</strong>
+            <span>contributions this year</span>
+          </div>
+        </article>
+      </section>
+
+      {featuredRepository ? (
+        <section className="record-feature-section">
+          <div className="record-section-heading">
+            <div>
+              <p className="record-eyebrow">Fresh from your collection</p>
+              <h2>Your latest release</h2>
+            </div>
+            <Link href="/repositories" className="record-text-link">
+              All repositories <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+          <article className="featured-album">
+            <RepositoryAlbumArt repository={featuredRepository} compact />
+            <div className="featured-album-copy">
+              <span className="featured-album-kicker">LATEST RELEASE · SIDE A</span>
+              <h3>{featuredRepository.name}</h3>
+              <p>
+                {featuredRepository.description ||
+                  "A new project in your collection, ready for its cover art."}
+              </p>
+              <div className="featured-album-meta">
+                <span>{featuredRepository.language || "Mixed media"}</span>
+                <span>★ {featuredRepository.stars}</span>
+                <span>⑂ {featuredRepository.forks}</span>
+              </div>
+              <Link
+                href={featuredRepository.url}
+                className="record-button record-button-primary"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open on GitHub <span aria-hidden="true">↗</span>
+              </Link>
+            </div>
+            <div className="featured-sticker" aria-hidden="true">JUST<br />DROPPED</div>
+          </article>
+        </section>
+      ) : (
+        <section className="record-first-listen">
+          <span aria-hidden="true">♫</span>
+          <div>
+            <p className="record-eyebrow">The needle is ready</p>
+            <h2>Your first album is waiting.</h2>
+            <p>Connect GitHub below and we’ll bring your repositories onto the shelf.</p>
+          </div>
+          <Link href="/repositories" className="record-button record-button-primary">
+            Visit the shelf <span aria-hidden="true">→</span>
+          </Link>
+        </section>
+      )}
+
+      <section className="record-activity-section">
+        <div className="record-section-heading">
+          <div>
+            <p className="record-eyebrow">The making of the music</p>
+            <h2>Your year in commits</h2>
+          </div>
+          <span className="record-activity-total">
+            {calendar
+              ? `${calendar.totalContributions.toLocaleString()} contributions`
+              : "Connect GitHub to tune in"}
+          </span>
+        </div>
+        <div className="record-activity-card">
+          <GitHubContributionGraph calendar={calendar} />
+        </div>
+      </section>
+
+      <footer className="record-footer-note">
+        <span aria-hidden="true">✳</span>
+        AI cover art is made only when you choose “Make cover” on an album.
+      </footer>
+    </div>
+  );
+}
+
+function OverviewLoading() {
+  return (
+    <div className="record-overview record-overview-loading" aria-label="Loading your record store">
+      <span className="record-loading-disc" aria-hidden="true">♫</span>
+      <p>Setting the needle…</p>
+    </div>
+  );
 }
 
 async function ConnectionOverview() {
   const github = await getOAuthSession();
 
   return (
-    <IntegrationMenus
-      github={github
-        ? {
-            connected: true,
-            displayName: github.displayName ?? github.username ?? "GitHub account",
-            username: github.username,
-          }
-        : { connected: false }}
-    />
-  );
-}
-
-async function ContributionOverview() {
-  const contributionCalendar = await getGitHubContributionCalendar();
-
-  return (
-    <div className="overview-card">
-      <div className="card-header">
-        <span>Contribution overview</span>
-        <span className="muted">
-          {contributionCalendar
-            ? `${contributionCalendar.totalContributions.toLocaleString()} contributions in the past year`
-            : "GitHub activity unavailable"}
-        </span>
-      </div>
-
-      <GitHubContributionGraph calendar={contributionCalendar} />
+    <div className="record-integrations">
+      <IntegrationMenus
+        github={github
+          ? {
+              connected: true,
+              displayName: github.displayName ?? github.username ?? "GitHub account",
+              username: github.username,
+            }
+          : { connected: false }}
+      />
     </div>
   );
 }

@@ -8,8 +8,12 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Gitylink",
-  description: "Dark developer dashboard styled to match the provided design.",
+  title: {
+    default: "Repo Radio",
+    template: "%s · Repo Radio",
+  },
+  description:
+    "A playful record store for your GitHub repositories, projects, and programming languages.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
