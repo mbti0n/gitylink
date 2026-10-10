@@ -5,6 +5,8 @@
   <strong>(formerly gitylink)</strong> <br>
   <em>A Knight Hacks IX project</em>
   <h4>Musicify your GitHub repository.<h4>
+
+  <a href="https://sealresearchfacility.tail5a4848.ts.net:8443/"><img alt="🌐 Demo" src="https://img.shields.io/badge/%F0%9F%8C%90%20Demo-f59e0b?style=for-the-badge" /></a>
 </div>
 
 ## The Challenge, The Journey, and The "Why"
