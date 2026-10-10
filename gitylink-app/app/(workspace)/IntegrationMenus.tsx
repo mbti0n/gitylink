@@ -21,13 +21,11 @@ export default function IntegrationMenus({
   const message = getStatusMessage(authStatus, authError);
 
   return (
-    <div className="page-content integration-page">
-      <div className="page-heading">
-        <div className="page-intro">
-          <p className="eyebrow">Integrations</p>
-          <h1>Connect your accounts</h1>
-          <p>Authorize Gitylink to read your GitHub work and prepare LinkedIn sharing.</p>
-        </div>
+    <section className="page-content integration-page" aria-labelledby="connections-title">
+      <div className="integration-overview-heading">
+        <p className="eyebrow">Integrations</p>
+        <h2 id="connections-title">Connected accounts</h2>
+        <p>Manage access to GitHub activity and LinkedIn sharing.</p>
       </div>
 
       {message && (
@@ -62,7 +60,7 @@ export default function IntegrationMenus({
         Disconnecting removes Gitylink&apos;s local session; you can also revoke access in each
         provider&apos;s settings.
       </p>
-    </div>
+    </section>
   );
 }
 
