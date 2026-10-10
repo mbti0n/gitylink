@@ -143,7 +143,7 @@ Use the same two breakpoints for new screens: CSS grid with `repeat(n, minmax(<m
 - Static files go in `public/` and are referenced by root path (`/logo.svg`). The SVGs currently there (`file`, `globe`, `next`, `vercel`, `window`) are create-next-app leftovers and aren't used.
 - No CDN, no `images` config, no remote patterns. Raster images should use `next/image`. Remote images such as GitHub avatars would need `images.remotePatterns` added to `next.config.ts`.
 - Figma asset URLs from `get_design_context` / `download_assets` expire. Download them into `public/` right away. Never ship a Figma URL in code.
-- The brand mark isn't an asset. It's a CSS gradient tile (`.brand-mark`, `linear-gradient(135deg, #35d66d, #20a351)`) with a `↗` glyph.
+- The brand mark is the "Commit to the Beat" logo: `public/logo-light.svg` and `public/logo-dark.svg`, both rendered in `.brand-mark.brand-logo` (Sidebar.tsx) with CSS showing the one that matches `<html data-theme>`. `app/icon.svg` (a copy of the light logo) is the favicon.
 
 ## 5. Icons
 

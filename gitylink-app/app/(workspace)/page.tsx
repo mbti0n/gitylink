@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import BeatCat from "@/components/BeatCat";
 import GitHubContributionGraph from "@/components/GitHubContributionGraph";
 import RepositoryAlbumArt from "@/components/RepositoryAlbumArt";
 import Reveal from "@/components/Reveal";
@@ -154,7 +155,7 @@ async function LibraryOverview() {
           </section>
         ) : (
           <section className="record-first-listen">
-            <span aria-hidden="true">♫</span>
+            <BeatCat mood="excited" />
             <div>
               <p className="record-eyebrow">The needle is ready</p>
               <h2>Your first album is waiting.</h2>
@@ -199,7 +200,7 @@ async function LibraryOverview() {
 function OverviewLoading() {
   return (
     <div className="record-overview record-overview-loading" aria-label="Loading your record store">
-      <span className="record-loading-disc" aria-hidden="true">♫</span>
+      <BeatCat mood="confused" />
       <p>Setting the needle…</p>
     </div>
   );
