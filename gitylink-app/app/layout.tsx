@@ -8,7 +8,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Commit to Post Dashboard",
+  title: "Gitylink",
   description: "Dark developer dashboard styled to match the provided design.",
 };
 

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Topbar from "@/components/Topbar";
 
 const roadmapMetrics = [
   { icon: "◎", value: "6", label: "Active milestones", tone: "blue" },
@@ -66,13 +65,12 @@ const focusAreas = [
 ];
 
 export const metadata: Metadata = {
-  title: "Career roadmap · Commit to Post",
+  title: "Career roadmap · Gitylink",
 };
 
 export default function CareerRoadmapPage() {
   return (
     <section className="content-panel">
-      <Topbar crumb="Career roadmap" />
 
       <div className="page-content">
         <div className="page-heading">

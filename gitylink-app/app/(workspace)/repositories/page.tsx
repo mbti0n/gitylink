@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Topbar from "@/components/Topbar";
 import { getGitHubRepositories } from "@/lib/github-repositories";
 import Repositories from "./Repositories";
 
 export const metadata: Metadata = {
-  title: "Repositories · Commit to Post",
+  title: "Repositories · Gitylink",
 };
 
 export default function RepositoriesPage() {
   return (
     <section className="content-panel">
-      <Topbar crumb="Repositories" />
       <Suspense fallback={<div className="panel repository-loading">Loading your GitHub repositories…</div>}>
         <RepositoriesFromGitHub />
       </Suspense>

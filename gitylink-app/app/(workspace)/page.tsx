@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import Topbar from "@/components/Topbar";
 import GitHubContributionGraph from "@/components/GitHubContributionGraph";
 import { getGitHubContributionCalendar } from "@/lib/github-contributions";
 import { getGitHubProfile } from "@/lib/github-profile";
@@ -42,11 +41,9 @@ const shareCards = [
 export default function Home() {
   return (
     <section className="content-panel">
-      <Topbar crumb="Overview" />
-
       <div className="hero-row">
         <div>
-          <Suspense fallback={<h1>Good evening 👋</h1>}>
+          <Suspense fallback={<h1>Hi</h1>}>
             <WelcomeHeading />
           </Suspense>
           <p>Turn your work into stories worth sharing.</p>
@@ -124,7 +121,7 @@ export default function Home() {
 async function WelcomeHeading() {
   const profile = await getGitHubProfile();
   const name = profile?.name || profile?.login || "there";
-  return <h1>Good evening, {name} 👋</h1>;
+  return <h1>Hi, {name}</h1>;
 }
 
 async function ContributionOverview() {

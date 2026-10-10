@@ -65,7 +65,11 @@ export default function Repositories({
         {filteredRepositories.map((repository) => (
           <article className="repository-card" key={repository.id}>
             <div className="repository-card-heading">
-              <h2>{repository.name}</h2>
+              <h2>
+                <a href={repository.url} target="_blank" rel="noreferrer">
+                  {repository.name}
+                </a>
+              </h2>
               <span className="repository-status">Public</span>
             </div>
             <p className="repository-summary">
@@ -80,18 +84,6 @@ export default function Repositories({
                 timeZone: "UTC",
               })} <span aria-hidden="true">·</span> {repository.stars} stars
             </p>
-            <div className="repository-actions">
-              <a
-                className="btn btn-secondary repository-project-link"
-                href={repository.url}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`View ${repository.name} on GitHub`}
-                title="View project on GitHub"
-              >
-                <span aria-hidden="true">↗</span>
-              </a>
-            </div>
           </article>
         ))}
         {repositories === null ? (

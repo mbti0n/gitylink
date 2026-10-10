@@ -8,8 +8,7 @@ export default function Sidebar() {
       <div className="brand-wrap">
         <div className="brand-mark">↗</div>
         <div className="brand-text">
-          <span className="brand-title">commit</span>
-          <span className="brand-subtitle">to post</span>
+          <span className="brand-title">gitylink</span>
         </div>
       </div>
 

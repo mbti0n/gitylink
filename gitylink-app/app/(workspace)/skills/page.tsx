@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Topbar from "@/components/Topbar";
 
 const skillMetrics = [
   { value: "24", label: "Demonstrated skills", tone: "green" },
@@ -74,14 +73,12 @@ const gaps = [
 ];
 
 export const metadata: Metadata = {
-  title: "Skills explorer · Commit to Post",
+  title: "Skills explorer · Gitylink",
 };
 
 export default function SkillsExplorerPage() {
   return (
     <section className="content-panel">
-      <Topbar crumb="Skills explorer" />
-
       <main className="skills-page">
         <div className="skills-hero-row">
           <div>

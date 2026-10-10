@@ -5,7 +5,7 @@ import type { GitHubProfile } from "@/lib/github-profile";
 
 const flowSteps = [
   { icon: "⌁", title: "GitHub", detail: "Reads your commits" },
-  { icon: "✦", title: "Commit to Post", detail: "Drafts your story" },
+  { icon: "✦", title: "Gitylink", detail: "Drafts your story" },
   { icon: "in", title: "LinkedIn", detail: "Posts when you approve" },
 ];
 
@@ -43,7 +43,7 @@ export default function Preferences({
         </div>
       </div>
 
-      <ol className="panel pref-flow" aria-label="How Commit to Post works">
+      <ol className="panel pref-flow" aria-label="How Gitylink works">
         {flowSteps.map((step) => (
           <li key={step.title} className="pref-flow-step">
             <span className="pref-flow-icon" aria-hidden="true">
@@ -138,7 +138,7 @@ export default function Preferences({
       <section className="pref-section" aria-labelledby="account-heading">
         <div className="pref-section-intro">
           <h2 id="account-heading">Session &amp; data</h2>
-          <p>Sign out of this device, or remove Commit to Post completely.</p>
+          <p>Sign out of this device, or remove Gitylink completely.</p>
         </div>
 
         <div className="panel pref-panel">
@@ -156,7 +156,7 @@ export default function Preferences({
 
           <div className="pref-row danger">
             <div className="pref-row-text">
-              <strong>Remove Commit to Post</strong>
+                <strong>Remove Gitylink</strong>
               <p>
                 Revoke GitHub and LinkedIn access and delete your drafts. Posts already on LinkedIn
                 stay there.
