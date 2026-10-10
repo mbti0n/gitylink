@@ -10,10 +10,8 @@ type ConnectionInfo = {
 
 export default function IntegrationMenus({
   github,
-  linkedin,
 }: {
   github: ConnectionInfo;
-  linkedin: ConnectionInfo;
 }) {
   const searchParams = useSearchParams();
   const authStatus = searchParams.get("auth");
@@ -25,7 +23,7 @@ export default function IntegrationMenus({
       <div className="integration-overview-heading">
         <p className="eyebrow">Integrations</p>
         <h2 id="connections-title">Connected accounts</h2>
-        <p>Manage access to GitHub activity and LinkedIn sharing.</p>
+        <p>Manage access to your GitHub activity.</p>
       </div>
 
       {message && (
@@ -39,40 +37,29 @@ export default function IntegrationMenus({
 
       <div className="integration-grid">
         <IntegrationCard
-          provider="github"
           title="GitHub"
           mark="⌁"
           description="Read your public repositories, commits, and contribution activity."
           scopes="Read your profile and public repositories."
           connection={github}
         />
-        <IntegrationCard
-          provider="linkedin"
-          title="LinkedIn"
-          mark="in"
-          description="Authorize your LinkedIn account for profile access and future post publishing."
-          scopes="Read your profile and request permission to publish posts."
-          connection={linkedin}
-        />
       </div>
       <p className="integration-security-note">
         Access tokens are encrypted in HTTP-only browser cookies and marked Secure over HTTPS.
-        Disconnecting removes Gitylink&apos;s local session; you can also revoke access in each
-        provider&apos;s settings.
+        Disconnecting removes Gitylink&apos;s local session; you can also revoke access in GitHub
+        settings.
       </p>
     </section>
   );
 }
 
 function IntegrationCard({
-  provider,
   title,
   mark,
   description,
   scopes,
   connection,
 }: {
-  provider: "github" | "linkedin";
   title: string;
   mark: string;
   description: string;
@@ -80,13 +67,13 @@ function IntegrationCard({
   connection: ConnectionInfo;
 }) {
   return (
-    <section className="panel integration-card" aria-labelledby={`${provider}-title`}>
-      <div className={`integration-mark ${provider}`} aria-hidden="true">
+    <section className="panel integration-card" aria-labelledby="github-title">
+      <div className="integration-mark github" aria-hidden="true">
         {mark}
       </div>
       <div className="integration-card-content">
         <div className="integration-card-title">
-          <h2 id={`${provider}-title`}>{title}</h2>
+          <h2 id="github-title">{title}</h2>
           <span
             className={`integration-status${connection.connected ? " is-connected" : ""}`}
           >
@@ -98,20 +85,18 @@ function IntegrationCard({
         {connection.connected && (
           <p className="integration-account">
             Connected as <strong>{connection.displayName}</strong>
-            {provider === "github" && connection.username
-              ? ` · @${connection.username}`
-              : ""}
+            {connection.username ? ` · @${connection.username}` : ""}
           </p>
         )}
         <div className="integration-actions">
           {connection.connected ? (
-            <form action={`/api/auth/${provider}`} method="post">
+            <form action="/api/auth/github" method="post">
               <button type="submit" className="btn btn-secondary">
                 Disconnect {title}
               </button>
             </form>
           ) : (
-            <form action={`/api/auth/${provider}`} method="get">
+            <form action="/api/auth/github" method="get">
               <button type="submit" className="btn btn-primary">
                 Connect {title}
               </button>
@@ -135,8 +120,6 @@ function getStatusMessage(
     return "The provider could not complete authorization. Please try again.";
   }
   if (status === "github-connected") return "GitHub was connected successfully.";
-  if (status === "linkedin-connected") return "LinkedIn was connected successfully.";
   if (status === "github-disconnected") return "GitHub was disconnected.";
-  if (status === "linkedin-disconnected") return "LinkedIn was disconnected.";
   return null;
 }

@@ -33,7 +33,7 @@ const GITHUB_HEADERS = {
 };
 
 export const getGitHubActivity = cache(async (limit: number): Promise<GitHubCommit[] | null> => {
-  const token = (await getOAuthSession("github"))?.accessToken;
+  const token = (await getOAuthSession())?.accessToken;
   if (!token) return null;
 
   const headers = { ...GITHUB_HEADERS, Authorization: `Bearer ${token}` };
@@ -90,7 +90,7 @@ export async function getGitHubRepositoryCommits(
   repositoryName: string,
   limit = 30,
 ): Promise<GitHubCommit[] | null> {
-  const token = (await getOAuthSession("github"))?.accessToken;
+  const token = (await getOAuthSession())?.accessToken;
   if (!token) return null;
 
   const [profile, repositories] = await Promise.all([

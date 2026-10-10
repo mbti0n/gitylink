@@ -2,7 +2,7 @@
 
 # gitylink-app: design system rules for Figma → code
 
-"Commit to Post" is a dark developer dashboard that turns GitHub activity into LinkedIn posts.
+"Commit to Post" is a dark developer dashboard that turns GitHub activity into project drafts.
 These rules apply when implementing Figma designs through the Figma MCP server.
 
 ## Figma source
@@ -16,7 +16,7 @@ These rules apply when implementing Figma designs through the Figma MCP server.
   | Activity | `31:1723` | `app/(workspace)/activity/` |
   | Post studio | `31:2090` | `app/(workspace)/post-studio/` |
   | Skills Explorer | `2:2` | Not built |
-  | Preferences | — (no Figma frame) | `app/(workspace)/preferences/` (Settings → Preferences). There's no custom account: identity comes from GitHub (source) and posts go to LinkedIn (destination), so never add name, email, password or photo fields. Classes: `.pref-flow`, `.pref-section`, `.pref-connection`, `.btn-danger`, `--danger*` tokens |
+  | Preferences | — (no Figma frame) | `app/(workspace)/preferences/` (Settings → Preferences). There's no custom account: identity comes from GitHub, so never add name, email, password or photo fields. Classes: `.pref-flow`, `.pref-section`, `.pref-connection`, `.btn-danger`, `--danger*` tokens |
   | Career roadmap | — (no Figma frame) | `app/(workspace)/roadmap/page.tsx`, styled with the shared `page-*`, `kpi-grid` and `.panel` classes |
 
 - Each screen is a 240px `Navigation sidebar` (`Sidebar` on Skills Explorer) plus a 1200px `Main workspace`.

@@ -6,8 +6,6 @@ import {
 } from "node:crypto";
 import { cookies } from "next/headers";
 
-export type OAuthProvider = "github" | "linkedin";
-
 export type OAuthSession = {
   accessToken: string;
   expiresAt: number;
@@ -15,45 +13,24 @@ export type OAuthSession = {
   displayName?: string;
 };
 
-type OAuthConfiguration = {
+export type OAuthConfiguration = {
   clientId: string;
   clientSecret: string;
   baseUrl: string;
   callbackUrl: string;
 };
 
-const sessionCookieNames: Record<OAuthProvider, string> = {
-  github: "gitylink_github_session",
-  linkedin: "gitylink_linkedin_session",
-};
+const sessionCookieName = "gitylink_github_session";
+const stateCookieName = "gitylink_github_oauth_state";
 
-const stateCookieNames: Record<OAuthProvider, string> = {
-  github: "gitylink_github_oauth_state",
-  linkedin: "gitylink_linkedin_oauth_state",
-};
-
-export function isOAuthProvider(value: string): value is OAuthProvider {
-  return value === "github" || value === "linkedin";
-}
-
-export function getOAuthConfiguration(
-  provider: OAuthProvider,
-): OAuthConfiguration {
-  const clientId =
-    provider === "github"
-      ? process.env.GITHUB_CLIENT_ID
-      : process.env.LINKEDIN_CLIENT_ID;
-  const clientSecret =
-    provider === "github"
-      ? process.env.GITHUB_CLIENT_SECRET
-      : process.env.LINKEDIN_CLIENT_SECRET;
+export function getOAuthConfiguration(): OAuthConfiguration {
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
   const configuredBaseUrl = process.env.AUTH_BASE_URL;
   const authSecret = process.env.AUTH_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error(
-      `${provider} OAuth requires its client ID and client secret.`,
-    );
+    throw new Error("GitHub OAuth requires its client ID and client secret.");
   }
   if (!configuredBaseUrl) {
     throw new Error("AUTH_BASE_URL must be configured before OAuth can start.");
@@ -79,74 +56,57 @@ export function getOAuthConfiguration(
     clientId,
     clientSecret,
     baseUrl,
-    callbackUrl: `${baseUrl}/api/auth/${provider}/callback`,
+    callbackUrl: `${baseUrl}/api/auth/github/callback`,
   };
 }
 
-export function getOAuthStateCookieName(provider: OAuthProvider) {
-  return stateCookieNames[provider];
+export function getOAuthStateCookieName() {
+  return stateCookieName;
 }
 
 export function createOAuthState() {
   return randomBytes(32).toString("base64url");
 }
 
-export async function getOAuthSession(
-  provider: OAuthProvider,
-): Promise<OAuthSession | null> {
-  const value = (await cookies()).get(sessionCookieNames[provider])?.value;
+export async function getOAuthSession(): Promise<OAuthSession | null> {
+  const value = (await cookies()).get(sessionCookieName)?.value;
   if (!value) return null;
 
   try {
     const decoded = decryptSession(value);
-    if (
-      !isOAuthSession(decoded) ||
-      decoded.expiresAt <= Date.now()
-    ) {
+    if (!isOAuthSession(decoded) || decoded.expiresAt <= Date.now()) {
       return null;
     }
     return decoded;
   } catch (error) {
-    console.warn(`Ignoring an invalid ${provider} OAuth session cookie.`, error);
+    console.warn("Ignoring an invalid GitHub OAuth session cookie.", error);
     return null;
   }
 }
 
-export function setOAuthSessionCookie(
-  response: Response,
-  provider: OAuthProvider,
-  session: OAuthSession,
-) {
-  const { baseUrl } = getOAuthConfiguration(provider);
+export function setOAuthSessionCookie(response: Response, session: OAuthSession) {
+  const { baseUrl } = getOAuthConfiguration();
   const maxAge = Math.max(
     0,
     Math.floor((session.expiresAt - Date.now()) / 1000),
   );
   response.headers.append(
     "Set-Cookie",
-    serializeCookie(
-      sessionCookieNames[provider],
-      encryptSession(session),
-      {
-        httpOnly: true,
-        secure: baseUrl.startsWith("https://"),
-        sameSite: "Lax",
-        path: "/",
-        maxAge,
-      },
-    ),
+    serializeCookie(sessionCookieName, encryptSession(session), {
+      httpOnly: true,
+      secure: baseUrl.startsWith("https://"),
+      sameSite: "Lax",
+      path: "/",
+      maxAge,
+    }),
   );
 }
 
-export function clearOAuthCookies(
-  response: Response,
-  provider: OAuthProvider,
-) {
-  const secure =
-    process.env.AUTH_BASE_URL?.startsWith("https://") ?? false;
+export function clearOAuthCookies(response: Response) {
+  const secure = process.env.AUTH_BASE_URL?.startsWith("https://") ?? false;
   response.headers.append(
     "Set-Cookie",
-    serializeCookie(sessionCookieNames[provider], "", {
+    serializeCookie(sessionCookieName, "", {
       httpOnly: true,
       secure,
       sameSite: "Lax",
@@ -154,22 +114,18 @@ export function clearOAuthCookies(
       maxAge: 0,
     }),
   );
-  clearOAuthStateCookie(response, provider);
+  clearOAuthStateCookie(response);
 }
 
-export function clearOAuthStateCookie(
-  response: Response,
-  provider: OAuthProvider,
-) {
-  const secure =
-    process.env.AUTH_BASE_URL?.startsWith("https://") ?? false;
+export function clearOAuthStateCookie(response: Response) {
+  const secure = process.env.AUTH_BASE_URL?.startsWith("https://") ?? false;
   response.headers.append(
     "Set-Cookie",
-    serializeCookie(stateCookieNames[provider], "", {
+    serializeCookie(stateCookieName, "", {
       httpOnly: true,
       secure,
       sameSite: "Lax",
-      path: `/api/auth/${provider}/callback`,
+      path: "/api/auth/github/callback",
       maxAge: 0,
     }),
   );

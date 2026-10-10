@@ -101,7 +101,7 @@ export default function PostStudio({
     setIsGenerating(true);
     setActionError("");
     try {
-      const response = await fetch("/api/generate-post", {
+      const response = await fetch("/api/generate-draft", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -113,22 +113,22 @@ export default function PostStudio({
           draft: action === "generate" ? undefined : draft,
         }),
       });
-      const result = (await response.json()) as { post?: string; error?: string };
-      if (!response.ok || !result.post) {
-        throw new Error(result.error || "Could not generate a post.");
+      const result = (await response.json()) as { draft?: string; error?: string };
+      if (!response.ok || !result.draft) {
+        throw new Error(result.error || "Could not generate a draft.");
       }
-      updateDraft(result.post);
+      updateDraft(result.draft);
       setShowPreview(false);
     } catch (requestError) {
       setActionError(
-        requestError instanceof Error ? requestError.message : "Could not generate a post.",
+        requestError instanceof Error ? requestError.message : "Could not generate a draft.",
       );
     } finally {
       setIsGenerating(false);
     }
   }
 
-  async function copyPost() {
+  async function copyDraft() {
     if (!draft) return;
     try {
       await navigator.clipboard.writeText(draft);
@@ -218,9 +218,9 @@ export default function PostStudio({
                   <span className="draft-state">Draft</span>
                 </div>
                 <label className="editor">
-                  <span className="sr-only">Post draft</span>
+                  <span className="sr-only">Project draft</span>
                   <textarea
-                    aria-label="Post draft"
+                    aria-label="Project draft"
                     value={draft}
                     onChange={(event) => updateDraft(event.target.value)}
                     placeholder="Generate a draft with the AI writing tools, or start writing here."
@@ -266,7 +266,7 @@ export default function PostStudio({
                   onClick={() => void runAiAction("shorten")}
                   disabled={!draft || isGenerating}
                 >
-                  Shorten post
+                  Shorten draft
                 </button>
                 <button
                   type="button"
@@ -291,14 +291,14 @@ export default function PostStudio({
 
           {showPreview && (
             <section className="post-preview-section" ref={previewRef} aria-labelledby="preview-heading">
-              <h2 id="preview-heading">Post preview</h2>
+              <h2 id="preview-heading">Draft preview</h2>
               <div className="panel preview-panel">
                 <div className="author">
                   <div className="author-avatar">{initials(authorName)}</div>
                   <div className="author-details">
                     <span className="author-name">{authorName}</span>
                     <span>{authorDetails}</span>
-                    <span>LinkedIn · Just now</span>
+                    <span>Project update · Draft preview</span>
                   </div>
                 </div>
                 <p className="preview-body">{draft}</p>
@@ -309,16 +309,10 @@ export default function PostStudio({
                   </span>
                   <span className="attachment-meta">github.com · Public repository</span>
                 </a>
-                <div className="social-actions" aria-hidden="true">
-                  <span>♧ Like</span>
-                  <span>○ Comment</span>
-                  <span>↻ Repost</span>
-                  <span>↗ Send</span>
-                </div>
               </div>
               <div className="panel review-panel">
                 <strong>✓  Ready for your final review</strong>
-                <p>Check the details, add your voice, then copy your post to share on LinkedIn.</p>
+                <p>Check the details, add your voice, then copy your project update.</p>
               </div>
               <div className="post-preview-actions">
                 <span className="save-status" aria-live="polite">
@@ -327,8 +321,8 @@ export default function PostStudio({
                 <button type="button" className="btn btn-secondary" onClick={() => setSaved(true)}>
                   Save draft
                 </button>
-                <button type="button" className="btn btn-primary" onClick={copyPost} disabled={!draft}>
-                  {copied ? "Copied ✓" : "Copy post ↗"}
+                <button type="button" className="btn btn-primary" onClick={copyDraft} disabled={!draft}>
+                  {copied ? "Copied ✓" : "Copy draft"}
                 </button>
               </div>
             </section>

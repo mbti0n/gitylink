@@ -6,7 +6,6 @@ import type { GitHubProfile } from "@/lib/github-profile";
 const flowSteps = [
   { icon: "⌁", title: "GitHub", detail: "Reads your commits" },
   { icon: "✦", title: "Gitylink", detail: "Drafts your story" },
-  { icon: "in", title: "LinkedIn", detail: "Posts when you approve" },
 ];
 
 function initials(name: string) {
@@ -21,13 +20,9 @@ function initials(name: string) {
 export default function Preferences({
   github,
   githubConnected,
-  linkedinConnected,
-  linkedinName,
 }: {
   github: GitHubProfile | null;
   githubConnected: boolean;
-  linkedinConnected: boolean;
-  linkedinName?: string;
 }) {
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [confirmText, setConfirmText] = useState("");
@@ -44,7 +39,7 @@ export default function Preferences({
         <div className="page-intro">
           <p className="eyebrow">Settings</p>
           <h1>Preferences</h1>
-          <p>There&apos;s no separate account or password. You sign in with GitHub and post to LinkedIn.</p>
+          <p>Connect GitHub to use your repository activity and account profile.</p>
         </div>
       </div>
 
@@ -104,42 +99,6 @@ export default function Preferences({
             </div>
           </div>
 
-          <div className="pref-connection">
-            <div className="pref-connection-icon linkedin" aria-hidden="true">
-              in
-            </div>
-            <div className="pref-connection-text">
-              <strong>
-                LinkedIn <span className="pref-role">Destination</span>
-              </strong>
-              {linkedinConnected ? (
-                <>
-                  <span>Connected as {linkedinName || "LinkedIn account"}</span>
-                  <span>Nothing is published until you approve a post.</span>
-                </>
-              ) : (
-                <span>Connect LinkedIn to publish your stories directly.</span>
-              )}
-            </div>
-            <div className="pref-connection-actions">
-              {linkedinConnected ? (
-                <>
-                  <span className="status-badge">Connected</span>
-                  <form action="/api/auth/linkedin" method="post">
-                    <button type="submit" className="btn btn-secondary">
-                      Disconnect
-                    </button>
-                  </form>
-                </>
-              ) : (
-                <form action="/api/auth/linkedin" method="get">
-                  <button type="submit" className="btn btn-primary">
-                    Connect LinkedIn
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
         </div>
       </section>
 
@@ -153,7 +112,7 @@ export default function Preferences({
           <div className="pref-row">
             <div className="pref-row-text">
               <strong>Log out</strong>
-              <p>Sign out on this device. Your GitHub and LinkedIn connections stay in place.</p>
+              <p>Sign out on this device. Your GitHub connection stays in place.</p>
             </div>
             <button type="button" className="btn btn-secondary">
               Log out
@@ -166,8 +125,7 @@ export default function Preferences({
             <div className="pref-row-text">
                 <strong>Remove Gitylink</strong>
               <p>
-                Revoke GitHub and LinkedIn access and delete your drafts. Posts already on LinkedIn
-                stay there.
+                Revoke GitHub access and delete your drafts.
               </p>
             </div>
             {!confirmingRemove && (

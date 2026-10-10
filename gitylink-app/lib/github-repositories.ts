@@ -27,7 +27,7 @@ type GitHubRepositoryResponse = {
 
 export const getGitHubRepositories = cache(
   async (): Promise<GitHubRepository[] | null> => {
-    const token = (await getOAuthSession("github"))?.accessToken;
+    const token = (await getOAuthSession())?.accessToken;
     if (!token) return null;
 
     const repositories: GitHubRepository[] = [];

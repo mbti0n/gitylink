@@ -2,18 +2,18 @@
 "use client";
 
 import { useState } from "react";
-import { generateLinkedInPost } from "@/lib/api";
+import { generateProjectDraft } from "@/lib/api";
 
 export default function PostGenerator() {
-  const [post, setPost] = useState("");
+  const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleGenerate() {
     setLoading(true);
 
     try {
-      const data = await generateLinkedInPost();
-      setPost(data.post);
+      const data = await generateProjectDraft();
+      setDraft(data.draft);
     } catch (error) {
       console.error(error);
       alert("Failed to generate post");
@@ -29,17 +29,16 @@ export default function PostGenerator() {
         disabled={loading}
         className="bg-blue-600 text-white px-4 py-2 rounded"
       >
-        {loading ? "Generating..." : "Generate LinkedIn Post"}
+        {loading ? "Generating..." : "Generate Project Draft"}
       </button>
 
-      {post && (
+      {draft && (
         <textarea
-          value={post}
-          onChange={(e) => setPost(e.target.value)}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
           className="w-full h-64 p-4 border rounded text-black bg-white"
         />
       )}
     </div>
   );
 }
-

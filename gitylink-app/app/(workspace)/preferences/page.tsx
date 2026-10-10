@@ -19,17 +19,14 @@ export default function PreferencesPage() {
 }
 
 async function PreferencesWithGitHub() {
-  const [github, githubSession, linkedinSession] = await Promise.all([
+  const [github, githubSession] = await Promise.all([
     getGitHubProfile(),
-    getOAuthSession("github"),
-    getOAuthSession("linkedin"),
+    getOAuthSession(),
   ]);
   return (
     <Preferences
       github={github}
       githubConnected={Boolean(githubSession)}
-      linkedinConnected={Boolean(linkedinSession)}
-      linkedinName={linkedinSession?.displayName}
     />
   );
 }

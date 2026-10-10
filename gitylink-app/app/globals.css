@@ -908,12 +908,6 @@ a.draft-btn {
   font-size: 26px;
 }
 
-.integration-mark.linkedin {
-  background: var(--primary);
-  font-size: 21px;
-  font-weight: 700;
-}
-
 .integration-card-content {
   display: flex;
   flex: 1;
@@ -1633,152 +1627,6 @@ a.draft-btn {
 
 .skills-stats-grid {
   padding-top: 28px;
-}
-
-.linkedin-skills-panel {
-  margin-top: 24px;
-  padding: 18px;
-  border: 1px solid var(--panel-border);
-  border-radius: 12px;
-  background: rgba(41, 47, 53, 0.9);
-}
-
-.linkedin-skills-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.linkedin-skills-header h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.linkedin-skills-header p {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.linkedin-clear-btn {
-  flex: 0 0 auto;
-  padding: 7px 10px;
-  border: 1px solid var(--panel-border);
-  border-radius: 7px;
-  background: transparent;
-  color: var(--muted-strong);
-  font-size: 11px;
-}
-
-.linkedin-clear-btn:hover {
-  border-color: var(--danger-border);
-  color: var(--danger);
-}
-
-.linkedin-import-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.linkedin-import-form label,
-.linkedin-import-actions > span {
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.linkedin-import-form textarea {
-  width: 100%;
-  min-height: 88px;
-  resize: vertical;
-  padding: 10px 12px;
-  border: 1px solid var(--panel-border);
-  border-radius: 8px;
-  background: rgba(48, 56, 64, 0.7);
-  color: var(--text);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.linkedin-import-form textarea::placeholder {
-  color: #7f8c99;
-}
-
-.linkedin-import-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.linkedin-import-actions .btn {
-  flex: 0 0 auto;
-  min-height: 36px;
-  padding: 0 14px;
-  font-size: 12px;
-}
-
-.linkedin-import-actions .btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.linkedin-import-message,
-.linkedin-empty-state {
-  margin: 12px 0 0;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.linkedin-skill-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 14px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.linkedin-skill-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 32px;
-  padding: 5px 7px 5px 11px;
-  border: 1px solid var(--panel-border);
-  border-radius: 999px;
-  background: var(--chip-bg);
-  color: var(--text);
-  font-size: 11px;
-}
-
-.linkedin-endorsement-count {
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.linkedin-skill-chip button {
-  display: grid;
-  width: 20px;
-  height: 20px;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1;
-}
-
-.linkedin-skill-chip button:hover {
-  background: var(--danger-soft);
-  color: var(--danger);
 }
 
 .skills-layout {
@@ -2842,13 +2690,6 @@ a.draft-btn {
   font-size: 20px;
 }
 
-.pref-connection-icon.linkedin {
-  background: var(--primary);
-  color: #fff;
-  font-size: 17px;
-  font-weight: 700;
-}
-
 .pref-connection-text {
   display: flex;
   flex: 1;
@@ -3188,21 +3029,5 @@ a.draft-btn {
 
   .pref-row {
     flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 560px) {
-  .linkedin-skills-panel {
-    padding: 14px;
-  }
-
-  .linkedin-skills-header,
-  .linkedin-import-actions {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .linkedin-clear-btn {
-    align-self: flex-start;
   }
 }

@@ -56,7 +56,7 @@ const contributionCalendarQuery = `
 `;
 
 export async function getGitHubContributionCalendar(): Promise<ContributionCalendar | null> {
-  const token = (await getOAuthSession("github"))?.accessToken;
+  const token = (await getOAuthSession())?.accessToken;
   if (!token) return null;
 
   await io();

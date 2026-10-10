@@ -1,6 +1,6 @@
 
-export async function generateLinkedInPost() {
-  const response = await fetch("/api/generate-post", {
+export async function generateProjectDraft() {
+  const response = await fetch("/api/generate-draft", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -15,7 +15,7 @@ export async function generateLinkedInPost() {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to generate post");
+    throw new Error("Failed to generate project draft");
   }
 
   return response.json();
@@ -41,4 +41,3 @@ export async function analyzeJob() {
 
   return response.json();
 }
-

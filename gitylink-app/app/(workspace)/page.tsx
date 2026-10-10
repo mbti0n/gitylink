@@ -143,10 +143,7 @@ async function WelcomeHeading() {
 }
 
 async function ConnectionOverview() {
-  const [github, linkedin] = await Promise.all([
-    getOAuthSession("github"),
-    getOAuthSession("linkedin"),
-  ]);
+  const github = await getOAuthSession();
 
   return (
     <IntegrationMenus
@@ -155,12 +152,6 @@ async function ConnectionOverview() {
             connected: true,
             displayName: github.displayName ?? github.username ?? "GitHub account",
             username: github.username,
-          }
-        : { connected: false }}
-      linkedin={linkedin
-        ? {
-            connected: true,
-            displayName: linkedin.displayName ?? "LinkedIn account",
           }
         : { connected: false }}
     />
