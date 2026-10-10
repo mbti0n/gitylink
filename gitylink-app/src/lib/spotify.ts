@@ -11,6 +11,7 @@ type SpotifyTrack = {
     images: { url: string }[];
   };
   external_urls: { spotify: string };
+  uri: string;
 };
 
 type SpotifySearchResponse = {
@@ -26,6 +27,7 @@ export type SpotifyTrackResult = {
   album: string;
   imageUrl: string | null;
   spotifyUrl: string;
+  spotifyEmbedUrl: string;
 };
 
 export async function getSpotifyAccessToken(clientId: string, clientSecret: string) {
@@ -77,5 +79,6 @@ export async function searchSpotifyTracks(
     album: track.album.name,
     imageUrl: track.album.images[0]?.url ?? null,
     spotifyUrl: track.external_urls.spotify,
+    spotifyEmbedUrl: `https://open.spotify.com/embed/track/${encodeURIComponent(track.id)}?utm_source=generator`,
   }));
 }

@@ -177,9 +177,11 @@ ${readme || "No README available."}
     ];
 
     return NextResponse.json({
-      impression: impression.summary,
-      genres: trackGroups.map(({ name, mood }) => ({ name, mood })),
-      tracks,
+      soundtrack: {
+        impression: impression.summary,
+        genres: trackGroups.map(({ name, mood }) => ({ name, mood })),
+        tracks,
+      },
     });
   } catch (error) {
     console.error("Repository soundtrack generation failed.", error);

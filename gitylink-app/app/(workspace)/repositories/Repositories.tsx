@@ -15,6 +15,7 @@ type AlbumSoundtrack = {
     album: string;
     imageUrl: string | null;
     spotifyUrl: string;
+    spotifyEmbedUrl: string;
   }[];
 };
 
@@ -28,6 +29,7 @@ export default function Repositories({
   const [isRefreshing, startRefresh] = useTransition();
   const [openRepositoryId, setOpenRepositoryId] = useState<number | null>(null);
   const [loadingRepositoryId, setLoadingRepositoryId] = useState<number | null>(null);
+  const [activeTrackId, setActiveTrackId] = useState<string | null>(null);
   const [soundtracks, setSoundtracks] = useState<Record<number, AlbumSoundtrack>>({});
   const [soundtrackErrors, setSoundtrackErrors] = useState<Record<number, string>>({});
   const filteredRepositories = useMemo(
@@ -220,6 +222,19 @@ export default function Repositories({
                                   <strong>{track.name}</strong>
                                   <span>{track.artists.join(", ")} · {track.album}</span>
                                 </div>
+                                <button
+                                  className="album-song-play"
+                                  type="button"
+                                  aria-label={`${activeTrackId === track.id ? "Close" : "Open"} Spotify player for ${track.name}`}
+                                  aria-expanded={activeTrackId === track.id}
+                                  onClick={() =>
+                                    setActiveTrackId((current) =>
+                                      current === track.id ? null : track.id,
+                                    )
+                                  }
+                                >
+                                  {activeTrackId === track.id ? "×" : "▶"}
+                                </button>
                                 <a
                                   href={track.spotifyUrl}
                                   target="_blank"
@@ -228,6 +243,15 @@ export default function Repositories({
                                 >
                                   ↗
                                 </a>
+                                {activeTrackId === track.id && (
+                                  <iframe
+                                    className="album-song-player"
+                                    src={track.spotifyEmbedUrl}
+                                    title={`Spotify player: ${track.name} by ${track.artists.join(", ")}`}
+                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                    loading="lazy"
+                                  />
+                                )}
                               </li>
                             ))}
                           </ol>
