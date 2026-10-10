@@ -127,9 +127,9 @@ export default function PostStudio() {
   }
 
   return (
-    <div className="studio-content">
-      <div className="studio-heading">
-        <div className="studio-intro">
+    <div className="page-content">
+      <div className="page-heading">
+        <div className="page-intro">
           <h1>Turn your commits into a story</h1>
           <p>Start with real work. Make it sound like you.</p>
         </div>
@@ -145,7 +145,7 @@ export default function PostStudio() {
       </div>
 
       <div className="studio-grid">
-        <div className="studio-column">
+        <div className="page-column">
           <h2>Choose your story</h2>
 
           <div className="panel story-panel">
@@ -212,7 +212,7 @@ export default function PostStudio() {
           </div>
         </div>
 
-        <div className="studio-column">
+        <div className="page-column">
           <h2>Your draft</h2>
 
           <div className="panel draft-panel">
@@ -280,7 +280,7 @@ export default function PostStudio() {
           </div>
         </div>
 
-        <div className="studio-column preview-column">
+        <div className="page-column preview-column">
           <h2>Post preview</h2>
 
           <div className="panel preview-panel">
