@@ -26,7 +26,13 @@ function NavLink({ item, compact }: { item: NavItem; compact?: boolean }) {
     .join(" ");
 
   return (
-    <Link href={item.href} className={className} aria-current={active ? "page" : undefined}>
+    <Link
+      href={item.href}
+      className={className}
+      aria-label={item.label}
+      title={item.label}
+      aria-current={active ? "page" : undefined}
+    >
       <span className="nav-icon">{item.icon}</span>
       <span>{item.label}</span>
     </Link>

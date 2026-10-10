@@ -3,19 +3,21 @@
 import Link from "next/link";
 import { useState } from "react";
 import GitHubContributionGraph from "@/components/GitHubContributionGraph";
+import type { GitHubCommit } from "@/lib/github-activity";
 import type { ContributionCalendar } from "@/lib/github-contributions";
 
 type Commit = {
   sha: string;
   repo: string;
-  time: string;
+  url: string;
+  date: string;
   daysAgo: number;
   message: string;
   meta: string;
   moment?: string;
 };
 
-const TOTAL_COMMITS = 148;
+const MAX_COMMITS = 50;
 
 const metrics = [
   { value: "148", label: "Commits this month", note: "↑ 23% from last month", accent: true },
@@ -24,45 +26,6 @@ const metrics = [
   { value: "8", label: "Post opportunities", note: "3 new moments this week" },
 ];
 
-const commits: Commit[] = [
-  {
-    sha: "a3f8c21",
-    repo: "portfolio-website",
-    time: "2 hours ago",
-    daysAgo: 0,
-    message: "feat: ship responsive portfolio and deploy to production",
-    meta: "a3f8c21 · main · 8 files changed · +246 −38 · React, TypeScript",
-    moment: "Shipped my new personal portfolio",
-  },
-  {
-    sha: "f91b7d0",
-    repo: "portfolio-website",
-    time: "4 hours ago",
-    daysAgo: 0,
-    message: "style: refine page transitions and mobile navigation",
-    meta: "f91b7d0 · main · 4 files changed · +82 −24 · React",
-  },
-  {
-    sha: "7c2e9a4",
-    repo: "task-manager-api",
-    time: "Yesterday",
-    daysAgo: 1,
-    message: "fix: resolve JWT refresh and authorization flow",
-    meta: "7c2e9a4 · main · 6 files changed · +184 −62 · Node.js, Security",
-    moment: "Finally fixed JWT authentication",
-  },
-  {
-    sha: "b6d03f2",
-    repo: "docker-homelab",
-    time: "3 days ago",
-    daysAgo: 3,
-    message: "feat: add Docker Compose services and environment config",
-    meta: "b6d03f2 · main · 5 files changed · +126 −19 · Docker, DevOps",
-    moment: "Automated my development environment",
-  },
-];
-
-const repos = Array.from(new Set(commits.map((c) => c.repo)));
 const periods = [
   { id: "today", label: "Today", maxDays: 0 },
   { id: "week", label: "This week", maxDays: 7 },
@@ -71,14 +34,21 @@ const periods = [
 
 export default function Activity({
   contributionCalendar,
+  initialCommits,
 }: {
   contributionCalendar: ContributionCalendar | null;
+  initialCommits: GitHubCommit[];
 }) {
   const [repo, setRepo] = useState("all");
   const [period, setPeriod] = useState("month");
   const [query, setQuery] = useState("");
   const [feedFilter, setFeedFilter] = useState("all");
   const [syncLabel, setSyncLabel] = useState("Synced 2 minutes ago");
+  const [commits, setCommits] = useState(initialCommits.map(toCommit));
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState("");
+
+  const repos = Array.from(new Set(commits.map((commit) => commit.repo)));
 
   const maxDays = periods.find((p) => p.id === period)?.maxDays ?? 31;
   const search = query.trim().toLowerCase();
@@ -93,6 +63,21 @@ export default function Activity({
   function syncNow() {
     setSyncLabel("Syncing…");
     setTimeout(() => setSyncLabel("Synced just now"), 800);
+  }
+
+  async function loadMoreActivity() {
+    setIsLoadingMore(true);
+    setLoadError("");
+    try {
+      const response = await fetch("/api/activity");
+      if (!response.ok) throw new Error("Could not load more activity.");
+      const data = (await response.json()) as { commits: GitHubCommit[] };
+      setCommits(data.commits.slice(0, MAX_COMMITS).map(toCommit));
+    } catch {
+      setLoadError("Could not load more activity. Please try again.");
+    } finally {
+      setIsLoadingMore(false);
+    }
   }
 
   return (
@@ -201,18 +186,10 @@ export default function Activity({
                       <div className="feed-details">
                         <div className="feed-topline">
                           <span className="feed-repo">{commit.repo}</span>
-                          <span className="feed-time">{commit.time}</span>
+                          <span className="feed-time">{formatTime(commit.date)}</span>
                         </div>
                         <div className="feed-message">{commit.message}</div>
                         <div className="feed-meta">{commit.meta}</div>
-                        {commit.moment && (
-                          <div className="feed-moment">
-                            <span>✦  {commit.moment}</span>
-                            <Link href="/post-studio" className="feed-link">
-                              Draft post →
-                            </Link>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </li>
@@ -223,12 +200,19 @@ export default function Activity({
             )}
             <div className="feed-footer">
               <span>
-                Showing {visibleCommits.length} of {TOTAL_COMMITS} commits
+                Showing {visibleCommits.length} of up to {MAX_COMMITS} commits
               </span>
-              <button type="button" className="link-btn">
-                Load more activity ↓
-              </button>
+              {commits.length < MAX_COMMITS && (
+                <button type="button" className="link-btn" onClick={loadMoreActivity} disabled={isLoadingMore}>
+                  {isLoadingMore ? "Loading activity…" : "Load more activity ↓"}
+                </button>
+              )}
             </div>
+            {loadError && (
+              <p className="feed-empty" role="alert">
+                {loadError}
+              </p>
+            )}
           </div>
         </div>
 
@@ -263,4 +247,25 @@ export default function Activity({
       </div>
     </div>
   );
+}
+
+function toCommit(commit: GitHubCommit): Commit {
+  const daysAgo = Math.floor((Date.now() - Date.parse(commit.date)) / 86_400_000);
+  return {
+    ...commit,
+    daysAgo: Math.max(0, daysAgo),
+    meta: `${commit.sha.slice(0, 7)} · ${new Date(commit.date).toLocaleDateString()}`,
+  };
+}
+
+function formatTime(date: string) {
+  const timestamp = Date.parse(date);
+  const elapsed = Math.max(0, Date.now() - timestamp);
+  const hours = Math.floor(elapsed / 3_600_000);
+  if (hours < 1) return "Less than an hour ago";
+  if (hours < 24) return `${hours} hours ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  return new Date(date).toLocaleDateString();
 }

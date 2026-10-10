@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Topbar from "@/components/Topbar";
+import { getGitHubActivity } from "@/lib/github-activity";
 import { getGitHubContributionCalendar } from "@/lib/github-contributions";
 import Activity from "./Activity";
 
@@ -20,6 +21,9 @@ export default function ActivityPage() {
 }
 
 async function ActivityWithContributions() {
-  const contributionCalendar = await getGitHubContributionCalendar();
-  return <Activity contributionCalendar={contributionCalendar} />;
+  const [contributionCalendar, commits] = await Promise.all([
+    getGitHubContributionCalendar(),
+    getGitHubActivity(4),
+  ]);
+  return <Activity contributionCalendar={contributionCalendar} initialCommits={commits ?? []} />;
 }

@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const github = {
-  name: "Jordan Doe",
-  handle: "jdoe",
-};
+import type { GitHubProfile } from "@/lib/github-profile";
 
 const flowSteps = [
   { icon: "⌁", title: "GitHub", detail: "Reads your commits" },
@@ -22,10 +18,15 @@ function initials(name: string) {
     .join("");
 }
 
-export default function Preferences() {
+export default function Preferences({
+  github,
+}: {
+  github: GitHubProfile | null;
+}) {
   const [linkedInConnected, setLinkedInConnected] = useState(true);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [confirmText, setConfirmText] = useState("");
+  const githubName = github?.name || github?.login || "GitHub account";
 
   function cancelRemove() {
     setConfirmingRemove(false);
@@ -65,14 +66,16 @@ export default function Preferences() {
         <div className="panel pref-panel">
           <div className="pref-connection">
             <div className="pref-avatar" aria-hidden="true">
-              {initials(github.name)}
+              {initials(githubName)}
             </div>
             <div className="pref-connection-text">
               <strong>
                 GitHub <span className="pref-role">Source</span>
               </strong>
               <span>
-                Signed in as {github.name} · @{github.handle}
+                {github
+                  ? `Signed in as ${githubName} · @${github.login}`
+                  : "GitHub profile unavailable"}
               </span>
               <span>Reads commits from the repositories you choose.</span>
             </div>
@@ -99,7 +102,7 @@ export default function Preferences() {
               </strong>
               {linkedInConnected ? (
                 <>
-                  <span>Posting as {github.name}</span>
+                  <span>Posting as {githubName}</span>
                   <span>Nothing is published until you approve a post.</span>
                 </>
               ) : (

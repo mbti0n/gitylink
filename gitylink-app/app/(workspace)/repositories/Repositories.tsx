@@ -1,33 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import type { GitHubRepository } from "@/lib/github-repositories";
 
-const repositories = [
-  {
-    name: "campus-planner",
-    languages: "React · TypeScript",
-    commits: 42,
-    opportunities: "3 post ideas",
-  },
-  {
-    name: "homelab-dashboard",
-    languages: "Docker · Python",
-    commits: 36,
-    opportunities: "2 post ideas",
-  },
-  {
-    name: "data-story",
-    languages: "Python · Pandas",
-    commits: 28,
-    opportunities: "4 skills",
-  },
-];
-
-export default function Repositories() {
+export default function Repositories({
+  repositories,
+}: {
+  repositories: GitHubRepository[] | null;
+}) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
-  const [lastSynced, setLastSynced] = useState("2 minutes ago");
-  const filteredRepositories = repositories.filter((repository) =>
-    `${repository.name} ${repository.languages}`
+  const [isRefreshing, startRefresh] = useTransition();
+  const filteredRepositories = (repositories ?? []).filter((repository) =>
+    `${repository.name} ${repository.language ?? ""} ${repository.description ?? ""}`
       .toLowerCase()
       .includes(query.trim().toLowerCase()),
   );
@@ -53,9 +39,10 @@ export default function Repositories() {
         <button
           className="btn btn-secondary"
           type="button"
-          onClick={() => setLastSynced("just now")}
+          onClick={() => startRefresh(() => router.refresh())}
+          disabled={isRefreshing}
         >
-          ↻ Sync now
+          ↻ {isRefreshing ? "Syncing…" : "Sync now"}
         </button>
         <label className="field repository-search">
           <span aria-hidden="true">⌕</span>
@@ -68,45 +55,54 @@ export default function Repositories() {
           />
         </label>
         <span className="repository-sync" aria-live="polite">
-          ✓ Synced {lastSynced}
+          {repositories === null
+            ? "GitHub unavailable"
+            : `${repositories.length} public repositories`}
         </span>
       </div>
 
       <div className="repository-list" aria-live="polite">
         {filteredRepositories.map((repository) => (
-          <article className="repository-card" key={repository.name}>
+          <article className="repository-card" key={repository.id}>
             <div className="repository-card-heading">
               <h2>{repository.name}</h2>
-              <span className="repository-status">Connected</span>
+              <span className="repository-status">Public</span>
             </div>
             <p className="repository-summary">
-              {repository.languages} <span aria-hidden="true">·</span>{" "}
-              {repository.commits} commits <span aria-hidden="true">·</span>{" "}
-              {repository.opportunities}
+              {repository.description || "No description provided."}
+            </p>
+            <p className="repository-meta">
+              {repository.language || "No primary language"} <span aria-hidden="true">·</span>{" "}
+              Updated {new Date(repository.updatedAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                timeZone: "UTC",
+              })} <span aria-hidden="true">·</span> {repository.stars} stars
             </p>
             <div className="repository-actions">
               <a
-                className="btn btn-secondary"
-                href={`https://github.com/search?q=${encodeURIComponent(repository.name)}&type=repositories`}
+                className="btn btn-secondary repository-project-link"
+                href={repository.url}
                 target="_blank"
                 rel="noreferrer"
+                aria-label={`View ${repository.name} on GitHub`}
+                title="View project on GitHub"
               >
-                View project
-              </a>
-              <a
-                className="btn btn-secondary"
-                href="https://github.com/settings/installations"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Manage access
+                <span aria-hidden="true">↗</span>
               </a>
             </div>
           </article>
         ))}
-        {filteredRepositories.length === 0 && (
-          <p className="repository-empty">No repositories match “{query}”.</p>
-        )}
+        {repositories === null ? (
+          <p className="repository-empty">
+            Couldn’t load repositories. Check that <code>GITHUB_TOKEN</code> is valid and can access your account.
+          </p>
+        ) : filteredRepositories.length === 0 ? (
+          <p className="repository-empty">
+            {query ? `No repositories match “${query}”.` : "No public repositories found for this account."}
+          </p>
+        ) : null}
       </div>
     </div>
   );

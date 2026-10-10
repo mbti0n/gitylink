@@ -13,7 +13,7 @@ const skills = [
     status: "Strong evidence",
     detail: "portfolio-website · dashboard-ui",
     strength: [true, true, true, true, false],
-    tone: "green",
+    color: "#f1e05a",
     badge: "Re",
   },
   {
@@ -21,7 +21,7 @@ const skills = [
     status: "Strong evidence",
     detail: "portfolio-website · bot-dashboard",
     strength: [true, true, true, true, false],
-    tone: "green",
+    color: "#3178c6",
     badge: "Ty",
   },
   {
@@ -29,7 +29,7 @@ const skills = [
     status: "Demonstrated",
     detail: "task-manager-api · discord-bot",
     strength: [true, true, true, false, false],
-    tone: "blue",
+    color: "#f1e05a",
     badge: "No",
   },
   {
@@ -37,7 +37,7 @@ const skills = [
     status: "Demonstrated",
     detail: "docker-homelab · dev-containers",
     strength: [true, true, true, false, false],
-    tone: "blue",
+    color: "#384d54",
     badge: "Do",
   },
   {
@@ -45,7 +45,7 @@ const skills = [
     status: "Emerging",
     detail: "data-analysis-lab",
     strength: [true, true, false, false, false],
-    tone: "blue",
+    color: "#3572A5",
     badge: "Py",
   },
   {
@@ -53,7 +53,7 @@ const skills = [
     status: "Emerging",
     detail: "task-manager-api",
     strength: [true, true, false, false, false],
-    tone: "blue",
+    color: "#336790",
     badge: "Po",
   },
 ];
@@ -118,12 +118,17 @@ export default function SkillsExplorerPage() {
             <div className="skill-card-grid">
               {skills.map((skill) => (
                 <article key={skill.name} className="skill-card">
-                  <div className={`skill-icon ${skill.tone}`}>
+                  <div className="skill-icon" style={{ backgroundColor: skill.color }}>
                     {skill.badge}
                   </div>
 
                   <div className="skill-body">
                     <div className="skill-headline">
+                      <span
+                        className="skill-language-dot"
+                        style={{ backgroundColor: skill.color }}
+                        aria-hidden="true"
+                      />
                       <h3>{skill.name}</h3>
                       <span>{skill.status}</span>
                     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { GitHubProfile } from "@/lib/github-profile";
 
 type Commit = {
   sha: string;
@@ -93,7 +94,20 @@ function countWords(text: string) {
   return text.trim() ? text.trim().split(/\s+/).length : 0;
 }
 
-export default function PostStudio() {
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("");
+}
+
+export default function PostStudio({
+  profile,
+}: {
+  profile: GitHubProfile | null;
+}) {
   const [repoFilter, setRepoFilter] = useState("all");
   const [selectedRepo, setSelectedRepo] = useState(stories[0].repo);
   const [drafts, setDrafts] = useState(() =>
@@ -110,6 +124,10 @@ export default function PostStudio() {
   const visibleStories =
     repoFilter === "all" ? stories : stories.filter((s) => s.repo === repoFilter);
   const platformLabel = platforms.find((p) => p.id === platform)?.label;
+  const authorName = profile?.name || profile?.login || "GitHub account";
+  const authorDetails = profile
+    ? `@${profile.login}${profile.bio ? ` · ${profile.bio}` : ""}`
+    : "GitHub profile unavailable";
 
   function updateDraft(text: string) {
     setDrafts((current) => ({ ...current, [story.repo]: text }));
@@ -300,10 +318,10 @@ export default function PostStudio() {
             </div>
             <hr className="divider" />
             <div className="author">
-              <div className="author-avatar">JD</div>
+              <div className="author-avatar">{initials(authorName)}</div>
               <div className="author-details">
-                <span className="author-name">Your account</span>
-                <span>Developer · Building in public</span>
+                <span className="author-name">{authorName}</span>
+                <span>{authorDetails}</span>
                 <span>Just now · 🌐</span>
               </div>
               <span className="author-more" aria-hidden="true">

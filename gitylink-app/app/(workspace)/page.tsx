@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Topbar from "@/components/Topbar";
 import GitHubContributionGraph from "@/components/GitHubContributionGraph";
 import { getGitHubContributionCalendar } from "@/lib/github-contributions";
+import { getGitHubProfile } from "@/lib/github-profile";
 
 const metrics = [
   { icon: "▤", value: "12", label: "Repositories tracked", tone: "blue" },
@@ -45,7 +46,9 @@ export default function Home() {
 
       <div className="hero-row">
         <div>
-          <h1>Good evening, developer 👋</h1>
+          <Suspense fallback={<h1>Good evening 👋</h1>}>
+            <WelcomeHeading />
+          </Suspense>
           <p>Turn your work into stories worth sharing.</p>
         </div>
         <Link href="/post-studio" className="primary-btn">+ Create a post</Link>
@@ -116,6 +119,12 @@ export default function Home() {
       </div>
     </section>
   );
+}
+
+async function WelcomeHeading() {
+  const profile = await getGitHubProfile();
+  const name = profile?.name || profile?.login || "there";
+  return <h1>Good evening, {name} 👋</h1>;
 }
 
 async function ContributionOverview() {

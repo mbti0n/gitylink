@@ -1,4 +1,5 @@
 import Sidebar from "@/components/Sidebar";
+import WorkspaceShell from "@/components/WorkspaceShell";
 
 export default function WorkspaceLayout({
   children,
@@ -6,9 +7,6 @@ export default function WorkspaceLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="dashboard-page">
-      <Sidebar />
-      {children}
-    </main>
+    <WorkspaceShell sidebar={<Sidebar />}>{children}</WorkspaceShell>
   );
 }
