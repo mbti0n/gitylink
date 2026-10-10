@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import GitHubContributionGraph from "@/components/GitHubContributionGraph";
 import RepositoryAlbumArt from "@/components/RepositoryAlbumArt";
+import Reveal from "@/components/Reveal";
 import { getGitHubContributionCalendar } from "@/lib/github-contributions";
 import { getGitHubProfile } from "@/lib/github-profile";
 import { getGitHubRepositories } from "@/lib/github-repositories";
@@ -89,100 +90,108 @@ async function LibraryOverview() {
         </div>
       </header>
 
-      <section className="record-stat-row" aria-label="Your collection at a glance">
-        <article>
-          <span className="record-stat-icon">▣</span>
-          <div><strong>{repositories?.length ?? "—"}</strong><span>albums in the crate</span></div>
-        </article>
-        <article>
-          <span className="record-stat-icon">♫</span>
-          <div><strong>{languageCount || "—"}</strong><span>sounds in your setlist</span></div>
-        </article>
-        <article>
-          <span className="record-stat-icon">✳</span>
-          <div><strong>{repositories ? totalStars.toLocaleString() : "—"}</strong><span>stars from the crowd</span></div>
-        </article>
-        <article>
-          <span className="record-stat-icon">↗</span>
-          <div>
-            <strong>{calendar?.totalContributions.toLocaleString() ?? "—"}</strong>
-            <span>contributions this year</span>
-          </div>
-        </article>
-      </section>
-
-      {featuredRepository ? (
-        <section className="record-feature-section">
-          <div className="record-section-heading">
+      <Reveal>
+        <section className="record-stat-row" aria-label="Your collection at a glance">
+          <article>
+            <span className="record-stat-icon">▣</span>
+            <div><strong>{repositories?.length ?? "—"}</strong><span>albums in the crate</span></div>
+          </article>
+          <article>
+            <span className="record-stat-icon">♫</span>
+            <div><strong>{languageCount || "—"}</strong><span>sounds in your setlist</span></div>
+          </article>
+          <article>
+            <span className="record-stat-icon">✳</span>
+            <div><strong>{repositories ? totalStars.toLocaleString() : "—"}</strong><span>stars from the crowd</span></div>
+          </article>
+          <article>
+            <span className="record-stat-icon">↗</span>
             <div>
-              <p className="record-eyebrow">Fresh from your collection</p>
-              <h2>Your latest release</h2>
+              <strong>{calendar?.totalContributions.toLocaleString() ?? "—"}</strong>
+              <span>contributions this year</span>
             </div>
-            <Link href="/repositories" className="record-text-link">
-              All repositories <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-          <article className="featured-album">
-            <RepositoryAlbumArt repository={featuredRepository} compact />
-            <div className="featured-album-copy">
-              <span className="featured-album-kicker">LATEST RELEASE · SIDE A</span>
-              <h3>{featuredRepository.name}</h3>
-              <p>
-                {featuredRepository.description ||
-                  "A new project in your collection, ready for its cover art."}
-              </p>
-              <div className="featured-album-meta">
-                <span>{featuredRepository.language || "Mixed media"}</span>
-                <span>★ {featuredRepository.stars}</span>
-                <span>⑂ {featuredRepository.forks}</span>
-              </div>
-              <Link
-                href={featuredRepository.url}
-                className="record-button record-button-primary"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open on GitHub <span aria-hidden="true">↗</span>
-              </Link>
-            </div>
-            <div className="featured-sticker" aria-hidden="true">JUST<br />DROPPED</div>
           </article>
         </section>
-      ) : (
-        <section className="record-first-listen">
-          <span aria-hidden="true">♫</span>
-          <div>
-            <p className="record-eyebrow">The needle is ready</p>
-            <h2>Your first album is waiting.</h2>
-            <p>Connect GitHub below and we’ll bring your repositories onto the shelf.</p>
+      </Reveal>
+
+      <Reveal>
+        {featuredRepository ? (
+          <section className="record-feature-section">
+            <div className="record-section-heading">
+              <div>
+                <p className="record-eyebrow">Fresh from your collection</p>
+                <h2>Your latest release</h2>
+              </div>
+              <Link href="/repositories" className="record-text-link">
+                All repositories <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+            <article className="featured-album">
+              <RepositoryAlbumArt repository={featuredRepository} compact />
+              <div className="featured-album-copy">
+                <span className="featured-album-kicker">LATEST RELEASE · SIDE A</span>
+                <h3>{featuredRepository.name}</h3>
+                <p>
+                  {featuredRepository.description ||
+                    "A new project in your collection, ready for its cover art."}
+                </p>
+                <div className="featured-album-meta">
+                  <span>{featuredRepository.language || "Mixed media"}</span>
+                  <span>★ {featuredRepository.stars}</span>
+                  <span>⑂ {featuredRepository.forks}</span>
+                </div>
+                <Link
+                  href={featuredRepository.url}
+                  className="record-button record-button-primary"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open on GitHub <span aria-hidden="true">↗</span>
+                </Link>
+              </div>
+              <div className="featured-sticker" aria-hidden="true">JUST<br />DROPPED</div>
+            </article>
+          </section>
+        ) : (
+          <section className="record-first-listen">
+            <span aria-hidden="true">♫</span>
+            <div>
+              <p className="record-eyebrow">The needle is ready</p>
+              <h2>Your first album is waiting.</h2>
+              <p>Connect GitHub below and we’ll bring your repositories onto the shelf.</p>
+            </div>
+            <Link href="/repositories" className="record-button record-button-primary">
+              Visit the shelf <span aria-hidden="true">→</span>
+            </Link>
+          </section>
+        )}
+      </Reveal>
+
+      <Reveal>
+        <section className="record-activity-section">
+          <div className="record-section-heading">
+            <div>
+              <p className="record-eyebrow">The making of the music</p>
+              <h2>Your year in commits</h2>
+            </div>
+            <span className="record-activity-total">
+              {calendar
+                ? `${calendar.totalContributions.toLocaleString()} contributions`
+                : "Connect GitHub to tune in"}
+            </span>
           </div>
-          <Link href="/repositories" className="record-button record-button-primary">
-            Visit the shelf <span aria-hidden="true">→</span>
-          </Link>
+          <div className="record-activity-card">
+            <GitHubContributionGraph calendar={calendar} />
+          </div>
         </section>
-      )}
+      </Reveal>
 
-      <section className="record-activity-section">
-        <div className="record-section-heading">
-          <div>
-            <p className="record-eyebrow">The making of the music</p>
-            <h2>Your year in commits</h2>
-          </div>
-          <span className="record-activity-total">
-            {calendar
-              ? `${calendar.totalContributions.toLocaleString()} contributions`
-              : "Connect GitHub to tune in"}
-          </span>
-        </div>
-        <div className="record-activity-card">
-          <GitHubContributionGraph calendar={calendar} />
-        </div>
-      </section>
-
-      <footer className="record-footer-note">
-        <span aria-hidden="true">✳</span>
-        AI cover art is made only when you choose “Make cover” on an album.
-      </footer>
+      <Reveal>
+        <footer className="record-footer-note">
+          <span aria-hidden="true">✳</span>
+          AI cover art is made only when you choose “Make cover” on an album.
+        </footer>
+      </Reveal>
     </div>
   );
 }
@@ -200,16 +209,18 @@ async function ConnectionOverview() {
   const github = await getOAuthSession();
 
   return (
-    <div className="record-integrations">
-      <IntegrationMenus
-        github={github
-          ? {
-              connected: true,
-              displayName: github.displayName ?? github.username ?? "GitHub account",
-              username: github.username,
-            }
-          : { connected: false }}
-      />
-    </div>
+    <Reveal>
+      <div className="record-integrations">
+        <IntegrationMenus
+          github={github
+            ? {
+                connected: true,
+                displayName: github.displayName ?? github.username ?? "GitHub account",
+                username: github.username,
+              }
+            : { connected: false }}
+        />
+      </div>
+    </Reveal>
   );
 }

@@ -3252,6 +3252,45 @@ a.draft-btn {
     repeating-radial-gradient(circle, #292f2a 0 2px, #343a33 3px 4px, #292f2a 5px 8px);
   box-shadow: 0 22px 35px rgba(49, 42, 29, 0.24), inset 0 0 0 12px rgba(17, 22, 18, 0.35);
   transform: rotate(-13deg);
+  /* The spin-in curve ends at the idle speed (30deg/s) so the handoff doesn't jolt */
+  animation:
+    record-spin-in 2.6s cubic-bezier(0.16, 0.7, 0.3, 0.95) both,
+    record-spin-idle 12s linear 2.6s infinite;
+}
+
+/* Spins fast on page load, slows down, then keeps turning slowly */
+@keyframes record-spin-in {
+  from { transform: rotate(-1093deg); }
+  to { transform: rotate(-13deg); }
+}
+
+@keyframes record-spin-idle {
+  from { transform: rotate(-13deg); }
+  to { transform: rotate(347deg); }
+}
+
+/* Overview sections fade and slide up as they scroll into view (components/Reveal.tsx) */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .record-vinyl {
+    animation: none;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 .record-grooves {
