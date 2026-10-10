@@ -115,7 +115,7 @@ export default function Home() {
             <h1>Good evening, developer 👋</h1>
             <p>Turn your work into stories worth sharing.</p>
           </div>
-          <button type="button" className="primary-btn">+ Create a post</button>
+          <a href="/create-post" className="primary-btn nav-link-btn">+ Create a post</a>
         </div>
 
         <div className="stats-grid">
