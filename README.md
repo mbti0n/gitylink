@@ -12,7 +12,7 @@
 ## The Challenge, The Journey, and The "Why"
 *Repo Radio* was not our team's preferred idea. We were creating *gitylink*, a tool that syncs GitHub repos with LinkedIn projects and helps schedule the posts there using the API. However, the LinkedIn API is extremely limited to registered organizations. As a result, we had to turn everything around, building a brand new web app and keeping only GitHub integration, which eventually became a music-inspired GitHub browser web app. 
 
-The shift happened 12 hours before the submission deadline of Knight Hacks IX, and, at that moment, we were all in on a web app with LinkedIn integration and resume checkup functionalities. We ran into a tense situation: we did not have a proper plan B to have a fully working project to demonstrate. Thankfully, the Skills feature saved us, and it was the foundation of the complete shift of our project. That was when *gitylink* was resurrected to become *Repo Radio*
+The shift happened 12 hours before the submission deadline of Knight Hacks IX, and, at that moment, we were all in on a web app with LinkedIn integration and resume checkup functionalities. We ran into a tense situation: we did not have a proper plan B to have a fully working project to demonstrate. Thankfully, the Skills feature saved us, and it was the foundation of the complete shift of our project. That was when *gitylink* was resurrected to become *Repo Radio*.
 
 ## What's In It?
 - AI summary of a GitHub profile in a music context.
