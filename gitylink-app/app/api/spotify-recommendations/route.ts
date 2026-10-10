@@ -139,8 +139,9 @@ async function getSpotifyAccessToken(clientId: string, clientSecret: string) {
 }
 
 async function searchTracks(token: string, genre: string) {
+  const offset = Math.floor(Math.random() * 31);
   const response = await fetch(
-    `https://api.spotify.com/v1/search?type=track&limit=3&q=${encodeURIComponent(`${genre} music`)}`,
+    `https://api.spotify.com/v1/search?type=track&limit=20&offset=${offset}&q=${encodeURIComponent(`${genre} music`)}`,
     {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
@@ -153,7 +154,16 @@ async function searchTracks(token: string, genre: string) {
   }
 
   const searchData = (await response.json()) as SpotifySearchResponse;
-  return (searchData.tracks?.items ?? []).map((track) => ({
+  const candidates = searchData.tracks?.items ?? [];
+  for (let index = candidates.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [candidates[index], candidates[randomIndex]] = [
+      candidates[randomIndex],
+      candidates[index],
+    ];
+  }
+
+  return candidates.slice(0, 3).map((track) => ({
     id: track.id,
     name: track.name,
     artists: track.artists.map((artist) => artist.name),

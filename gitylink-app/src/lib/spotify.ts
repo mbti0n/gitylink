@@ -57,9 +57,10 @@ export async function searchSpotifyTracks(
   token: string,
   query: string,
   limit = 3,
+  offset = 0,
 ): Promise<SpotifyTrackResult[]> {
   const response = await fetch(
-    `https://api.spotify.com/v1/search?type=track&limit=${limit}&q=${encodeURIComponent(query)}`,
+    `https://api.spotify.com/v1/search?type=track&limit=${limit}&offset=${offset}&q=${encodeURIComponent(query)}`,
     {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
