@@ -1654,6 +1654,129 @@ a.draft-btn {
   line-height: 1.5;
 }
 
+/* Repositories */
+
+.repositories-content {
+  gap: 24px;
+}
+
+.repository-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.repository-toolbar .btn {
+  flex-shrink: 0;
+}
+
+.repository-search {
+  width: min(100%, 300px);
+  flex-shrink: 0;
+}
+
+.repository-search::after {
+  content: none;
+}
+
+.repository-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: inherit;
+  font: inherit;
+}
+
+.repository-search input::placeholder {
+  color: var(--muted);
+}
+
+.repository-search input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+.repository-sync {
+  flex: 1;
+  min-width: max-content;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: right;
+}
+
+.repository-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.repository-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+}
+
+.repository-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.repository-card-heading h2 {
+  min-width: 0;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.repository-status {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 28px;
+  padding: 0 12px;
+  background: var(--green-soft);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  color: var(--success-text);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.repository-summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.repository-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.repository-empty {
+  margin: 0;
+  padding: 24px;
+  border: 1px dashed var(--panel-border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
 @media (max-width: 1120px) {
   .stats-grid {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
@@ -1765,5 +1888,18 @@ a.draft-btn {
 
   .setting.narrow {
     flex-basis: auto;
+  }
+
+  .repository-toolbar {
+    align-items: stretch;
+  }
+
+  .repository-search {
+    width: 100%;
+  }
+
+  .repository-sync {
+    flex: 1 1 100%;
+    text-align: left;
   }
 }
