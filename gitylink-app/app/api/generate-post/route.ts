@@ -7,6 +7,7 @@ import {
   LinkedInDraftSchema,
 } from "../../../src/schemas/linkedin";
 
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
