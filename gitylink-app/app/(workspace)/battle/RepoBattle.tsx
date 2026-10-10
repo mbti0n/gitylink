@@ -28,6 +28,11 @@ type OwnerComparison = {
   second: OwnerStats;
 };
 
+type BattleSummary = {
+  headline: string;
+  summary: string;
+};
+
 type OwnerCoverResult = {
   repositoryId: number | null;
   cover?: string;
@@ -38,10 +43,13 @@ export default function RepoBattle() {
   const [firstOwner, setFirstOwner] = useState("");
   const [secondOwner, setSecondOwner] = useState("");
   const [comparison, setComparison] = useState<OwnerComparison | null>(null);
+  const [battleSummary, setBattleSummary] = useState<BattleSummary | null>(null);
   const [covers, setCovers] = useState<Record<number, string>>({});
   const [coverErrors, setCoverErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
   const [error, setError] = useState("");
+  const [summaryError, setSummaryError] = useState("");
   const comparisonId = useRef(0);
 
   async function compareOwners(event: FormEvent<HTMLFormElement>) {
@@ -49,7 +57,9 @@ export default function RepoBattle() {
     const currentComparisonId = ++comparisonId.current;
     setIsLoading(true);
     setError("");
+    setSummaryError("");
     setComparison(null);
+    setBattleSummary(null);
     setCovers({});
     setCoverErrors([]);
 
@@ -81,6 +91,39 @@ export default function RepoBattle() {
             setCoverErrors((previous) => [...previous, coverResult.error!]);
           }
         });
+      }
+
+      setIsSummaryLoading(true);
+      try {
+        const summaryResponse = await fetch("/api/repository-battle-summary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ firstOwner: result.first.owner, secondOwner: result.second.owner }),
+        });
+        const summaryResult = (await summaryResponse.json()) as {
+          summary?: BattleSummary;
+          error?: string;
+        };
+        if (!summaryResponse.ok || !summaryResult.summary) {
+          throw new Error(
+            summaryResult.error || "Could not write the AI repository matchup.",
+          );
+        }
+        if (comparisonId.current === currentComparisonId) {
+          setBattleSummary(summaryResult.summary);
+        }
+      } catch (summaryRequestError) {
+        if (comparisonId.current === currentComparisonId) {
+          setSummaryError(
+            summaryRequestError instanceof Error
+              ? summaryRequestError.message
+              : "Could not write the AI repository matchup. Try again.",
+          );
+        }
+      } finally {
+        if (comparisonId.current === currentComparisonId) {
+          setIsSummaryLoading(false);
+        }
       }
     } catch (requestError) {
       setError(
@@ -153,10 +196,14 @@ export default function RepoBattle() {
           <button
             className="record-button record-button-primary"
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isSummaryLoading}
           >
-            {isLoading ? "Counting repos…" : "Start battle"}
-            {!isLoading && <span aria-hidden="true">↗</span>}
+            {isSummaryLoading
+              ? "AI is calling the matchup…"
+              : isLoading
+                ? "Counting repos…"
+                : "Start battle"}
+            {!isLoading && !isSummaryLoading && <span aria-hidden="true">↗</span>}
           </button>
         </form>
         <p className="repo-battle-hint">
@@ -215,6 +262,27 @@ export default function RepoBattle() {
                 }
               />
             </div>
+            {(isSummaryLoading || battleSummary || summaryError) && (
+              <section
+                className="repo-battle-ai-summary"
+                aria-labelledby="repo-battle-ai-heading"
+                aria-live="polite"
+              >
+                <p className="record-eyebrow">THE AI’S POST-MATCH PRESS CONFERENCE</p>
+                {isSummaryLoading ? (
+                  <p className="repo-battle-ai-status" role="status">
+                    Reading both repo piles and preparing an extremely scientific roast…
+                  </p>
+                ) : battleSummary ? (
+                  <>
+                    <h3 id="repo-battle-ai-heading">{battleSummary.headline}</h3>
+                    <p>{battleSummary.summary}</p>
+                  </>
+                ) : (
+                  <p className="repo-battle-ai-error" role="alert">{summaryError}</p>
+                )}
+              </section>
+            )}
             {coverErrors.map((coverError) => (
               <p className="repo-battle-cover-status" key={coverError} role="status">
                 {coverError}

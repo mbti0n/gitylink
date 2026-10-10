@@ -6599,6 +6599,41 @@ a.draft-btn {
   letter-spacing: 0.1em;
 }
 
+.repo-battle-ai-summary {
+  grid-column: 1 / -1;
+  padding: 16px 18px;
+  border: 1px solid color-mix(in srgb, var(--battle-orange) 30%, var(--panel-border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--battle-orange) 7%, var(--rr-card-soft));
+}
+
+.repo-battle-ai-summary h3 {
+  margin: 5px 0 6px;
+  color: var(--rr-heading);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.repo-battle-ai-summary > p:not(.record-eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.repo-battle-ai-summary .record-eyebrow {
+  margin: 0;
+}
+
+.repo-battle-ai-status {
+  padding-top: 5px;
+}
+
+.repo-battle-ai-error {
+  color: #a13d32 !important;
+}
+
 .repo-battle-caption {
   grid-column: 1 / -1;
   margin: -7px 0 0;
