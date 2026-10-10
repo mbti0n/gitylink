@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import BeatCat from "@/components/BeatCat";
-import { getLanguageColor } from "@/lib/language-colors";
 import { getGitHubRepositories } from "@/lib/github-repositories";
+import { getLanguageColor } from "@/lib/language-colors";
 import SpotifySuggestions from "./SpotifySuggestions";
 
 export const metadata: Metadata = {

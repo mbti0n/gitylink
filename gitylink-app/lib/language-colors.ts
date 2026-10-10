@@ -1,4 +1,4 @@
-// Warm-leaning language colors shared by the Skills setlist and the Rhythm Arcade stage
+// Language colors shared by the Skills setlist, Repo Insights and the Rhythm Arcade
 const languageColors: Record<string, string> = {
   TypeScript: "#3178c6",
   JavaScript: "#e2bd44",
@@ -13,8 +13,24 @@ const languageColors: Record<string, string> = {
   CSS: "#6e83d2",
 };
 
-export const fallbackLanguageColor = "#c48757";
+const fallbackColors = [
+  "#c48757",
+  "#8b78ba",
+  "#4b9b82",
+  "#bd687d",
+  "#648cbd",
+  "#b28b3d",
+];
 
-export function getLanguageColor(language: string | null | undefined) {
-  return (language && languageColors[language]) || fallbackLanguageColor;
+export function getLanguageColor(language: string | null | undefined): string {
+  if (!language) return fallbackColors[0];
+  const knownColor = languageColors[language];
+  if (knownColor) return knownColor;
+
+  // Unknown languages still get a stable color: the same name always picks the same swatch
+  const hash = Array.from(language).reduce(
+    (value, character) => (value * 31 + character.charCodeAt(0)) >>> 0,
+    0,
+  );
+  return fallbackColors[hash % fallbackColors.length];
 }

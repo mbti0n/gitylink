@@ -1,8 +1,8 @@
 # Repo Radio
 
 Repo Radio turns GitHub repositories into album covers and the primary languages
-used across them into a skills setlist. The workspace has three destinations:
-Overview, Repositories, and Repo Rhythm.
+used across them into a skills setlist. The workspace includes Overview,
+Repositories, Repo Insights, Repo Rhythm, and Rhythm Arcade.
 
 ## Getting Started
 
