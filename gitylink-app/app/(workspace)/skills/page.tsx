@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getGitHubRepositories } from "@/lib/github-repositories";
+import SpotifySuggestions from "./SpotifySuggestions";
 
 export const metadata: Metadata = {
   title: "Skills Explorer",
@@ -115,73 +116,76 @@ async function SongsFromGitHub() {
           </Link>
         </div>
       ) : (
-        <div className="setlist-layout">
-          <section className="setlist-panel" aria-labelledby="setlist-title">
-            <div className="setlist-heading">
-              <div>
-                <span className="setlist-play-mark" aria-hidden="true">▶</span>
+        <>
+          <div className="setlist-layout">
+            <section className="setlist-panel" aria-labelledby="setlist-title">
+              <div className="setlist-heading">
                 <div>
-                  <p className="record-eyebrow">SIDE A · THE LANGUAGES</p>
-                  <h2 id="setlist-title">Your setlist</h2>
+                  <span className="setlist-play-mark" aria-hidden="true">▶</span>
+                  <div>
+                    <p className="record-eyebrow">SIDE A · THE LANGUAGES</p>
+                    <h2 id="setlist-title">Your setlist</h2>
+                  </div>
                 </div>
+                <span>{tracks.length} tracks</span>
               </div>
-              <span>{tracks.length} tracks</span>
-            </div>
 
-            <ol className="track-list">
-              {tracks.map((track, index) => {
-                const featuredRepository = track.repositories[0];
-                return (
-                  <li key={track.language} className="track-row">
-                    <span className="track-number">{String(index + 1).padStart(2, "0")}</span>
-                    <span
-                      className="track-art"
-                      style={{ backgroundColor: track.color }}
-                      aria-hidden="true"
-                    >
-                      <span>♫</span>
-                    </span>
-                    <div className="track-main">
-                      <strong>{track.language}</strong>
-                      <span>
-                        {track.repositories.map((repository) => repository.name).join(" · ")}
+              <ol className="track-list">
+                {tracks.map((track, index) => {
+                  const featuredRepository = track.repositories[0];
+                  return (
+                    <li key={track.language} className="track-row">
+                      <span className="track-number">{String(index + 1).padStart(2, "0")}</span>
+                      <span
+                        className="track-art"
+                        style={{ backgroundColor: track.color }}
+                        aria-hidden="true"
+                      >
+                        <span>♫</span>
                       </span>
-                    </div>
-                    <span className="track-plays">
-                      {track.repositories.length}{" "}
-                      {track.repositories.length === 1 ? "project" : "projects"}
-                    </span>
-                    <a
-                      className="track-open"
-                      href={featuredRepository.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`Open ${featuredRepository.name} on GitHub`}
-                    >
-                      ↗
-                    </a>
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
+                      <div className="track-main">
+                        <strong>{track.language}</strong>
+                        <span>
+                          {track.repositories.map((repository) => repository.name).join(" · ")}
+                        </span>
+                      </div>
+                      <span className="track-plays">
+                        {track.repositories.length}{" "}
+                        {track.repositories.length === 1 ? "project" : "projects"}
+                      </span>
+                      <a
+                        className="track-open"
+                        href={featuredRepository.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Open ${featuredRepository.name} on GitHub`}
+                      >
+                        ↗
+                      </a>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
 
-          <aside className="setlist-aside">
-            <div className="setlist-aside-art" aria-hidden="true">
-              <span className="setlist-aside-disc">♫</span>
-              <span className="setlist-aside-caption">A COLLECTION<br />IN PROGRESS</span>
-            </div>
-            <p className="record-eyebrow">LINER NOTES</p>
-            <h2>Skills, with receipts.</h2>
-            <p>
-              No guesswork or self-ratings here. Every track links back to the
-              repositories where that language shows up.
-            </p>
-            <Link href="/repositories" className="record-text-link">
-              Flip through the albums <span aria-hidden="true">→</span>
-            </Link>
-          </aside>
-        </div>
+            <aside className="setlist-aside">
+              <div className="setlist-aside-art" aria-hidden="true">
+                <span className="setlist-aside-disc">♫</span>
+                <span className="setlist-aside-caption">A COLLECTION<br />IN PROGRESS</span>
+              </div>
+              <p className="record-eyebrow">LINER NOTES</p>
+              <h2>Skills, with receipts.</h2>
+              <p>
+                No guesswork or self-ratings here. Every track links back to the
+                repositories where that language shows up.
+              </p>
+              <Link href="/repositories" className="record-text-link">
+                Flip through the albums <span aria-hidden="true">→</span>
+              </Link>
+            </aside>
+          </div>
+          <SpotifySuggestions />
+        </>
       )}
     </div>
   );

@@ -29,6 +29,7 @@ Copy `.env.example` to `.env.local` and configure these values:
 - `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: create a GitHub OAuth App and set its callback URL to `${AUTH_BASE_URL}/api/auth/github/callback`. The app requests `read:user` and `public_repo`.
 - `GEMINI_API_KEY`: enables on-demand AI-generated repository cover art.
 - `GEMINI_IMAGE_MODEL`: optional image model override; defaults to `gemini-2.5-flash-image`.
+- `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`: create a Spotify developer app to enable track suggestions in Skills Explorer. Credentials are used on the server only; recommendations search Spotify using genres inferred from your GitHub repository languages, names, and descriptions.
 
 Restart the development server after changing environment variables. Connect or disconnect GitHub from the overview page. Its access token is encrypted and stored in an HTTP-only cookie; it is not sent to browser JavaScript. Repository cover art is generated only when requested and saved in the current browser. The optional `GITHUB_TOKEN` is only used by the standalone `npm run github` smoke test.
 
