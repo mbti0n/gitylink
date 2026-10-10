@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { getGitHubInitials, getGitHubProfile } from "@/lib/github-profile";
 import SidebarNav from "./SidebarNav";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Sidebar() {
   return (
@@ -17,6 +18,8 @@ export default function Sidebar() {
         <div className="section-label">WORKSPACE</div>
         <SidebarNav />
       </div>
+
+      <ThemeToggle />
 
       <Suspense
         fallback={
