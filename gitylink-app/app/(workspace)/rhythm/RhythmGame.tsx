@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import type { GitHubMoodProfile } from "@/lib/github-mood";
 
 type RhythmTrack = {
   title: string;
@@ -12,6 +13,7 @@ type RhythmTrack = {
   snare: number[];
   hat: number[];
   melody: number[];
+  because?: string;
 };
 
 type Lane = {
@@ -25,10 +27,27 @@ type ChartNote = {
   id: string;
   lane: number;
   hitTime: number;
+  // Seconds to hold for a slider; 0 for a tap note
+  duration: number;
+  // Hit together with at least one other lane (Project Sekai-style linked notes)
+  dual: boolean;
 };
 
 type VisibleNote = ChartNote & {
   progress: number;
+  tailProgress: number;
+  holding: boolean;
+};
+
+type BeatLine = {
+  id: number;
+  progress: number;
+  downbeat: boolean;
+};
+
+type ActiveHold = {
+  note: ChartNote;
+  bonus: number;
 };
 
 type GameMode = "idle" | "composing" | "ready" | "playing" | "finished";
@@ -40,29 +59,116 @@ const lanes: Lane[] = [
   { id: 3, name: "Melody", key: "K", color: "#8299c0" },
 ];
 
+type Judgement = "perfect" | "great" | "good" | "miss";
+
+const judgementLabels: Record<Judgement, string> = {
+  perfect: "PERFECT",
+  great: "GREAT",
+  good: "GOOD",
+  miss: "MISS",
+};
+
+const emptyCounts: Record<Judgement, number> = { perfect: 0, great: 0, good: 0, miss: 0 };
+
+type Grade = "A" | "B" | "C" | "D" | "F";
+
+const gradeMessages: Record<Grade, string> = {
+  A: "Standing ovation. The crowd is chanting your commit hash.",
+  B: "Encore-worthy. A few wrong notes, but the vibe was immaculate.",
+  C: "Solid set. The band nods approvingly.",
+  D: "The crowd is… politely clapping. Run it back?",
+  F: "The algorithm has requested a rematch. Practice makes platinum.",
+};
+
+function gradeFor(accuracy: number): Grade {
+  if (accuracy >= 85) return "A";
+  if (accuracy >= 75) return "B";
+  if (accuracy >= 65) return "C";
+  if (accuracy >= 50) return "D";
+  return "F";
+}
+
 const beatCount = 4;
-const travelTime = 1.55;
-const hitWindow = 0.2;
+// Seconds of 3-2-1 countdown before the first note
+const leadIn = 2.4;
+// Notes are on screen for this long before reaching the line
+const travelTime = 2.1;
+const hitWindow = 0.26;
+// Faster AI beats are slowed to this tempo so there's time to read and hit every note
+const maxTempo = 100;
 const laneAudioFrequencies = [58, 185, 900, 330];
+// Releasing this close to a slider's end still counts as holding it through
+const holdReleaseGrace = 0.12;
+
+// A melody note followed by 2+ rests becomes a slider that lasts through the rests.
+// Used for both the chart and the audio, so the held note sounds exactly as long as the slider.
+function melodyHoldSteps(melody: number[], step: number) {
+  let rests = 0;
+  for (let next = step + 1; next < 16 && melody[next] < 0 && rests < 4; next += 1) {
+    rests += 1;
+  }
+  return rests >= 2 ? rests + 1 : 0;
+}
+
+// Charts are thinned for playability: at least an 8th note between notes in a lane (a full
+// beat on the busy hi-hat lane), and never more than two lanes at once. The audio still plays every hit.
+const minLaneGaps = [2, 2, 4, 2];
+// Order lanes are kept in when too many land together (the hi-hat goes first)
+const lanePriority = [0, 1, 3, 2];
+
+function thinSteps(steps: number[], minLaneGap: number) {
+  const kept: number[] = [];
+  for (const step of [...steps].sort((first, second) => first - second)) {
+    if (kept.length === 0 || step - kept[kept.length - 1] >= minLaneGap) kept.push(step);
+  }
+  // The pattern loops every bar, so the last note also needs room before the next bar's first
+  if (kept.length > 1 && kept[0] + 16 - kept[kept.length - 1] < minLaneGap) kept.pop();
+  return kept;
+}
 
 function buildChart(track: RhythmTrack): ChartNote[] {
-  const notes: ChartNote[] = [];
   const stepDuration = 60 / track.bpm / 4;
-  const drumSteps = [track.kick, track.snare, track.hat];
+  const melodySteps = track.melody.flatMap((note, step) => (note >= 0 ? [step] : []));
+  const laneSteps = [track.kick, track.snare, track.hat, melodySteps].map((steps, lane) =>
+    thinSteps(steps, minLaneGaps[lane]),
+  );
+  let notes: ChartNote[] = [];
 
-  for (let bar = 0; bar < beatCount; bar += 1) {
-    for (let step = 0; step < 16; step += 1) {
-      const hitTime = (bar * 16 + step) * stepDuration;
-      for (let lane = 0; lane < drumSteps.length; lane += 1) {
-        if (drumSteps[lane].includes(step)) {
-          notes.push({ id: `${bar}-${step}-${lane}`, lane, hitTime });
-        }
+  laneSteps.forEach((steps, lane) => {
+    steps.forEach((step, index) => {
+      const gap = (steps[index + 1] ?? steps[0] + 16) - step;
+      // Melody holds follow the sustained note; kick and snare hold for a beat on a downbeat
+      // when the lane has room before its next hit
+      const holdSteps =
+        lane === 3
+          ? melodyHoldSteps(track.melody, step)
+          : lane < 2 && step % 4 === 0 && gap >= 6
+            ? 4
+            : 0;
+      for (let bar = 0; bar < beatCount; bar += 1) {
+        notes.push({
+          id: `${bar}-${step}-${lane}`,
+          lane,
+          hitTime: (bar * 16 + step) * stepDuration,
+          duration: holdSteps * stepDuration,
+          dual: false,
+        });
       }
-      if (track.melody[step] >= 0) {
-        notes.push({ id: `${bar}-${step}-3`, lane: 3, hitTime });
-      }
-    }
+    });
+  });
+
+  // Notes that land together in two lanes are dual notes; a third or fourth is dropped
+  const perTime = new Map<number, ChartNote[]>();
+  for (const note of notes) {
+    perTime.set(note.hitTime, [...(perTime.get(note.hitTime) ?? []), note]);
   }
+  const dropped = new Set<string>();
+  for (const group of perTime.values()) {
+    group.sort((first, second) => lanePriority.indexOf(first.lane) - lanePriority.indexOf(second.lane));
+    group.slice(2).forEach((note) => dropped.add(note.id));
+    if (group.length > 1) group.slice(0, 2).forEach((note) => (note.dual = true));
+  }
+  notes = notes.filter((note) => !dropped.has(note.id));
   return notes.sort((first, second) => first.hitTime - second.hitTime);
 }
 
@@ -125,6 +231,7 @@ function playMelodyNote(
   destination: AudioNode,
   midiNote: number,
   time: number,
+  holdDuration = 0,
 ) {
   const oscillator = context.createOscillator();
   const gain = context.createGain();
@@ -132,10 +239,17 @@ function playMelodyNote(
   oscillator.frequency.value = 440 * 2 ** ((midiNote - 69) / 12);
   gain.gain.setValueAtTime(0.001, time);
   gain.gain.linearRampToValueAtTime(0.17, time + 0.012);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+  if (holdDuration > 0) {
+    // Sustain for exactly as long as the slider on screen
+    gain.gain.setTargetAtTime(0.11, time + 0.012, 0.08);
+    gain.gain.setValueAtTime(0.11, time + holdDuration);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + holdDuration + 0.12);
+  } else {
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+  }
   oscillator.connect(gain).connect(destination);
   oscillator.start(time);
-  oscillator.stop(time + 0.23);
+  oscillator.stop(time + Math.max(0.23, holdDuration + 0.13));
 }
 
 function scheduleTrack(context: AudioContext, destination: AudioNode, track: RhythmTrack, startAt: number) {
@@ -149,29 +263,46 @@ function scheduleTrack(context: AudioContext, destination: AudioNode, track: Rhy
       if (track.snare.includes(step)) playNoise(context, destination, noise, time, "snare");
       if (track.hat.includes(step)) playNoise(context, destination, noise, time, "hat");
       if (track.melody[step] >= 0) {
-        playMelodyNote(context, destination, track.melody[step], time);
+        const holdDuration = melodyHoldSteps(track.melody, step) * stepDuration;
+        playMelodyNote(context, destination, track.melody[step], time, holdDuration);
       }
     }
   }
 }
 
-export default function RhythmGame() {
+type Props = {
+  // undefined while the profile loads, null when GitHub isn't connected
+  moodProfile?: GitHubMoodProfile | null;
+};
+
+export default function RhythmGame({ moodProfile }: Props) {
+  const [phraseIndex, setPhraseIndex] = useState(0);
   const [mode, setMode] = useState<GameMode>("idle");
   const [track, setTrack] = useState<RhythmTrack | null>(null);
   const [error, setError] = useState("");
   const [visibleNotes, setVisibleNotes] = useState<VisibleNote[]>([]);
+  const [beatLines, setBeatLines] = useState<BeatLine[]>([]);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [hits, setHits] = useState(0);
   const [misses, setMisses] = useState(0);
   const [feedback, setFeedback] = useState("Ready when you are.");
+  const [judgement, setJudgement] = useState<{ kind: Judgement; id: number } | null>(null);
+  const [counts, setCounts] = useState(emptyCounts);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [pressedLanes, setPressedLanes] = useState([false, false, false, false]);
+  // Bumped on every hit so the lane's burst effect remounts and replays
+  const [laneBursts, setLaneBursts] = useState([0, 0, 0, 0]);
+  const judgementIdRef = useRef(0);
   const modeRef = useRef<GameMode>("idle");
   const trackRef = useRef<RhythmTrack | null>(null);
   const chartRef = useRef<ChartNote[]>([]);
   const hitNotesRef = useRef(new Set<string>());
   const missedNotesRef = useRef(new Set<string>());
-  const roundStartRef = useRef(0);
+  // Song time 0 on the AudioContext clock; the game reads time from audio so notes match the sound
+  const audioStartRef = useRef(0);
+  const activeHoldsRef = useRef(new Map<number, ActiveHold>());
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioGainRef = useRef<GainNode | null>(null);
 
@@ -180,8 +311,35 @@ export default function RhythmGame() {
     setMode(nextMode);
   }
 
+  // Seconds into the song as heard through the speakers. getOutputTimestamp accounts for
+  // output latency, so the notes line up with the sound rather than with the scheduler.
+  const songTime = useCallback(() => {
+    const context = audioContextRef.current;
+    if (!context) return -leadIn;
+    if (typeof context.getOutputTimestamp === "function") {
+      const stamp = context.getOutputTimestamp();
+      if (stamp.contextTime !== undefined && stamp.performanceTime !== undefined && stamp.performanceTime > 0) {
+        return stamp.contextTime + (performance.now() - stamp.performanceTime) / 1000 - audioStartRef.current;
+      }
+    }
+    return context.currentTime - (context.outputLatency || context.baseLatency || 0) - audioStartRef.current;
+  }, []);
+
+  const judge = useCallback((kind: Judgement) => {
+    judgementIdRef.current += 1;
+    setJudgement({ kind, id: judgementIdRef.current });
+    setCounts((current) => ({ ...current, [kind]: current[kind] + 1 }));
+  }, []);
+
+  const setLanePressed = useCallback((lane: number, pressed: boolean) => {
+    setPressedLanes((current) =>
+      current[lane] === pressed ? current : current.map((value, index) => (index === lane ? pressed : value)),
+    );
+  }, []);
+
   async function composeTrack() {
     updateMode("composing");
+    setPhraseIndex(0);
     setError("");
     setFeedback("The house band is warming up…");
     try {
@@ -190,15 +348,18 @@ export default function RhythmGame() {
       if (!response.ok || !result.track) {
         throw new Error(result.error || "Could not compose a rhythm track.");
       }
-      trackRef.current = result.track;
-      setTrack(result.track);
-      chartRef.current = buildChart(result.track);
+      const nextTrack = { ...result.track, bpm: Math.min(result.track.bpm, maxTempo) };
+      trackRef.current = nextTrack;
+      setTrack(nextTrack);
+      chartRef.current = buildChart(nextTrack);
       setVisibleNotes([]);
       setScore(0);
       setStreak(0);
       setBestStreak(0);
       setHits(0);
       setMisses(0);
+      setCounts(emptyCounts);
+      setJudgement(null);
       hitNotesRef.current.clear();
       missedNotesRef.current.clear();
       setFeedback("Fresh beat, hot off the algorithm.");
@@ -250,10 +411,14 @@ export default function RhythmGame() {
       setBestStreak(0);
       setHits(0);
       setMisses(0);
+      setCounts(emptyCounts);
+      setJudgement(null);
+      setCountdown(3);
       setFeedback("Get ready…");
 
-      const audioStartAt = context.currentTime + 1.2;
-      roundStartRef.current = performance.now() + 1200;
+      const audioStartAt = context.currentTime + leadIn;
+      audioStartRef.current = audioStartAt;
+      activeHoldsRef.current.clear();
       scheduleTrack(context, masterGain, currentTrack, audioStartAt);
       updateMode("playing");
     } catch (startError) {
@@ -270,7 +435,7 @@ export default function RhythmGame() {
     const currentTrack = trackRef.current;
     if (!currentTrack) return;
 
-    const currentTime = (performance.now() - roundStartRef.current) / 1000;
+    const currentTime = songTime();
     const nextNote = chartRef.current
       .filter(
         (note) =>
@@ -287,16 +452,23 @@ export default function RhythmGame() {
 
     if (nextNote && Math.abs(nextNote.hitTime - currentTime) <= hitWindow) {
       const difference = Math.abs(nextNote.hitTime - currentTime);
-      const points = difference <= 0.055 ? 100 : difference <= 0.115 ? 70 : 45;
+      const kind: Judgement = difference <= 0.07 ? "perfect" : difference <= 0.14 ? "great" : "good";
+      const points = kind === "perfect" ? 100 : kind === "great" ? 70 : 45;
+      // Guitar Hero-style multiplier: x2 at 10 combo, x3 at 20, x4 at 30
+      const multiplier = Math.min(4, 1 + Math.floor(streak / 10));
       const nextStreak = streak + 1;
+      // Dual notes are worth double; sliders pay the same again when held to the end
+      const earned = points * multiplier * (nextNote.dual ? 2 : 1);
       hitNotesRef.current.add(nextNote.id);
-      setScore((current) => current + points + Math.min(streak, 20));
+      if (nextNote.duration > 0) {
+        activeHoldsRef.current.set(lane, { note: nextNote, bonus: earned });
+      }
+      setScore((current) => current + earned);
       setHits((current) => current + 1);
       setStreak(nextStreak);
       setBestStreak((current) => Math.max(current, nextStreak));
-      setFeedback(
-        difference <= 0.055 ? "PERFECT!" : difference <= 0.115 ? "Nice!" : "On beat!",
-      );
+      judge(kind);
+      setLaneBursts((current) => current.map((value, index) => (index === lane ? value + 1 : value)));
 
       const context = audioContextRef.current;
       if (context && context.state === "running") {
@@ -314,19 +486,37 @@ export default function RhythmGame() {
       return;
     }
 
-    setStreak(0);
-    setMisses((current) => current + 1);
-    setFeedback("Miss! Follow the falling notes.");
-  }, [streak]);
+    // A press with no note nearby is ignored, as in Project Sekai and Guitar Hero;
+    // only notes that pass the line unhit count as misses
+  }, [streak, judge, songTime]);
+
+  // Letting go of a lane ends its slider; held to the end (or close enough) pays the bonus
+  const releaseLane = useCallback((lane: number) => {
+    const hold = activeHoldsRef.current.get(lane);
+    if (!hold) return;
+    activeHoldsRef.current.delete(lane);
+    if (songTime() >= hold.note.hitTime + hold.note.duration - holdReleaseGrace) {
+      setScore((current) => current + hold.bonus);
+      setLaneBursts((current) => current.map((value, index) => (index === lane ? value + 1 : value)));
+    }
+  }, [songTime]);
 
   useEffect(() => {
     if (mode !== "playing" || !track) return;
     let frame = 0;
     let lastRender = 0;
+    let shownCountdown: number | null = 3;
     const totalDuration = beatCount * 4 * (60 / track.bpm);
 
+    const beatDuration = 60 / track.bpm;
+
     function animate(now: number) {
-      const currentTime = (now - roundStartRef.current) / 1000;
+      const currentTime = songTime();
+      const nextCountdown = currentTime < 0 ? Math.ceil(-currentTime / (leadIn / 3)) : null;
+      if (nextCountdown !== shownCountdown) {
+        shownCountdown = nextCountdown;
+        setCountdown(nextCountdown);
+      }
       for (const note of chartRef.current) {
         if (
           currentTime > note.hitTime + hitWindow &&
@@ -336,32 +526,55 @@ export default function RhythmGame() {
           missedNotesRef.current.add(note.id);
           setMisses((current) => current + 1);
           setStreak(0);
-          setFeedback("Miss! Keep the groove.");
+          judge("miss");
+        }
+      }
+
+      // Sliders held all the way through pay out as they finish
+      for (const [lane, hold] of activeHoldsRef.current) {
+        if (currentTime >= hold.note.hitTime + hold.note.duration) {
+          activeHoldsRef.current.delete(lane);
+          setScore((current) => current + hold.bonus);
+          setLaneBursts((current) => current.map((value, index) => (index === lane ? value + 1 : value)));
         }
       }
 
       if (now - lastRender > 30) {
         lastRender = now;
-        setVisibleNotes(
-          chartRef.current
-            .filter(
-              (note) =>
-                !hitNotesRef.current.has(note.id) &&
-                !missedNotesRef.current.has(note.id) &&
-                note.hitTime >= currentTime - 0.05 &&
-                note.hitTime <= currentTime + travelTime,
-            )
-            .map((note) => ({
-              ...note,
-              progress: Math.max(0, Math.min(1, 1 - (note.hitTime - currentTime) / travelTime)),
-            })),
-        );
+        const toProgress = (time: number) =>
+          Math.max(0, Math.min(1, 1 - (time - currentTime) / travelTime));
+        const nextNotes: VisibleNote[] = [];
+        for (const note of chartRef.current) {
+          if (missedNotesRef.current.has(note.id)) continue;
+          const holding = activeHoldsRef.current.get(note.lane)?.note.id === note.id;
+          if (hitNotesRef.current.has(note.id) && !holding) continue;
+          if (!holding && note.hitTime < currentTime - 0.05) continue;
+          if (note.hitTime > currentTime + travelTime) continue;
+          const progress = holding ? 1 : toProgress(note.hitTime);
+          nextNotes.push({
+            ...note,
+            progress,
+            tailProgress: note.duration > 0 ? toProgress(note.hitTime + note.duration) : progress,
+            holding,
+          });
+        }
+        setVisibleNotes(nextNotes);
+
+        // Beat lines move with the notes, so the highway pulses on the actual beat
+        const nextLines: BeatLine[] = [];
+        const firstBeat = Math.max(0, Math.ceil(currentTime / beatDuration));
+        const lastBeat = Math.min(beatCount * 4, Math.floor((currentTime + travelTime) / beatDuration));
+        for (let beat = firstBeat; beat <= lastBeat; beat += 1) {
+          nextLines.push({ id: beat, progress: toProgress(beat * beatDuration), downbeat: beat % 4 === 0 });
+        }
+        setBeatLines(nextLines);
       }
 
       if (currentTime > totalDuration + hitWindow + 0.1) {
         updateMode("finished");
         setVisibleNotes([]);
-        setFeedback("Track complete. The crowd is legally required to cheer.");
+        setBeatLines([]);
+        setFeedback("Track complete.");
         stopMusic();
         return;
       }
@@ -370,7 +583,7 @@ export default function RhythmGame() {
 
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-  }, [mode, track, stopMusic]);
+  }, [mode, track, stopMusic, judge, songTime]);
 
   useEffect(() => {
     if (mode !== "playing") return;
@@ -379,12 +592,33 @@ export default function RhythmGame() {
       const lane = lanes.find((item) => item.key.toLowerCase() === event.key.toLowerCase());
       if (lane) {
         event.preventDefault();
+        setLanePressed(lane.id, true);
         pressLane(lane.id);
       }
     };
+    const onKeyUp = (event: KeyboardEvent) => {
+      const lane = lanes.find((item) => item.key.toLowerCase() === event.key.toLowerCase());
+      if (lane) {
+        setLanePressed(lane.id, false);
+        releaseLane(lane.id);
+      }
+    };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [mode, pressLane]);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, [mode, pressLane, releaseLane, setLanePressed]);
+
+  // Wrapped-style "thinking" phrases cycle while the AI composes
+  useEffect(() => {
+    if (mode !== "composing" || !moodProfile) return;
+    const timer = window.setInterval(() => {
+      setPhraseIndex((current) => (current + 1) % moodProfile.thinkingPhrases.length);
+    }, 1400);
+    return () => window.clearInterval(timer);
+  }, [mode, moodProfile]);
 
   useEffect(
     () => () => {
@@ -395,6 +629,26 @@ export default function RhythmGame() {
   );
 
   const accuracy = hits + misses === 0 ? 0 : Math.round((hits / (hits + misses)) * 100);
+  const multiplier = Math.min(4, 1 + Math.floor(streak / 10));
+  const grade = gradeFor(accuracy);
+
+  // A bar joining dual notes that are still on their way, like Project Sekai
+  const dualLinks: { id: string; progress: number; from: number; to: number }[] = [];
+  const dualGroups = new Map<number, VisibleNote[]>();
+  for (const note of visibleNotes) {
+    if (!note.dual || note.holding) continue;
+    dualGroups.set(note.hitTime, [...(dualGroups.get(note.hitTime) ?? []), note]);
+  }
+  for (const [hitTime, group] of dualGroups) {
+    if (group.length < 2) continue;
+    const laneIds = group.map((note) => note.lane);
+    dualLinks.push({
+      id: `link-${hitTime}`,
+      progress: group[0].progress,
+      from: Math.min(...laneIds),
+      to: Math.max(...laneIds),
+    });
+  }
 
   return (
     <div className="rhythm-page">
@@ -411,12 +665,30 @@ export default function RhythmGame() {
         </div>
       </header>
 
+      {moodProfile ? (
+        <MoodWrapped
+          mood={moodProfile}
+          hasTrack={Boolean(track)}
+          disabled={mode === "composing" || mode === "playing"}
+          onGenerate={() => void composeTrack()}
+        />
+      ) : moodProfile === null ? (
+        <p className="rhythm-mood-hint">
+          Connect GitHub on the overview page and every beat will be tuned to your coding year.
+        </p>
+      ) : (
+        <div className="rhythm-wrapped is-loading" aria-live="polite">
+          Reading your GitHub year…
+        </div>
+      )}
+
       <section className="rhythm-console" aria-label="Rhythm game">
         <div className="rhythm-track-info">
           <div className="rhythm-record-icon" aria-hidden="true">♫</div>
           <div>
             <p className="record-eyebrow">{track ? `${track.genre} · ${track.mood}` : "ORIGINAL AI COMPOSITION"}</p>
             <h2>{track?.title ?? "The algorithm is in the studio"}</h2>
+            {track?.because && <p className="rhythm-because">{track.because}</p>}
             <p>{track ? `${track.bpm} BPM · 4 bars · 4 lanes` : "Generate a fresh beat, then tap along."}</p>
           </div>
           <div className="rhythm-score" aria-live="polite">
@@ -426,51 +698,153 @@ export default function RhythmGame() {
         </div>
 
         <div className={`rhythm-board${mode === "playing" ? " is-playing" : ""}`}>
-          {lanes.map((lane) => (
-            <div
-              className="rhythm-lane"
-              key={lane.id}
-              style={{ "--lane-color": lane.color } as CSSProperties}
-            >
-              <span className="rhythm-lane-label">{lane.name}</span>
-              <span className="rhythm-lane-key">{lane.key}</span>
-              <div className="rhythm-hit-line" />
-              {visibleNotes
-                .filter((note) => note.lane === lane.id)
-                .map((note) => (
-                  <span
-                    className="rhythm-note"
-                    key={note.id}
-                    style={{ top: `${10 + note.progress * 82}%` }}
-                    aria-hidden="true"
-                  />
-                ))}
-              <button
-                type="button"
-                className="rhythm-tap-target"
-                aria-label={`Tap ${lane.name} lane, key ${lane.key}`}
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  pressLane(lane.id);
+          {/* Notes travel down a tilted highway toward the receptors, like Guitar Hero / Project Sekai */}
+          <div className="rhythm-highway">
+            {beatLines.map((line) => (
+              <span
+                className={`rhythm-beat-line${line.downbeat ? " is-downbeat" : ""}`}
+                key={line.id}
+                style={{ top: `${line.progress * 88}%` }}
+                aria-hidden="true"
+              />
+            ))}
+            {dualLinks.map((link) => (
+              <span
+                className="rhythm-dual-link"
+                key={link.id}
+                style={{
+                  top: `${link.progress * 88}%`,
+                  left: `${(link.from + 0.5) * 25}%`,
+                  width: `${(link.to - link.from) * 25}%`,
                 }}
+                aria-hidden="true"
+              />
+            ))}
+            {lanes.map((lane) => (
+              <div
+                className={`rhythm-lane${pressedLanes[lane.id] ? " is-pressed" : ""}`}
+                key={lane.id}
+                style={{ "--lane-color": lane.color } as CSSProperties}
               >
-                <span>{lane.key}</span>
-              </button>
-            </div>
-          ))}
-          {mode !== "playing" && (
-            <div className="rhythm-board-overlay">
-              <span aria-hidden="true">{mode === "composing" ? "◌" : mode === "finished" ? "✦" : "♫"}</span>
-              <p>
-                {mode === "composing"
-                  ? "Writing something fresh…"
-                  : mode === "finished"
-                    ? "Encore?"
-                    : "Your stage is waiting"}
-              </p>
+                <div className="rhythm-hit-line" />
+                {visibleNotes
+                  .filter((note) => note.lane === lane.id)
+                  .map((note) => (
+                    <span key={note.id} aria-hidden="true">
+                      {note.duration > 0 && (
+                        <span
+                          className={`rhythm-slider${note.holding ? " is-holding" : ""}`}
+                          style={{
+                            top: `${note.tailProgress * 88}%`,
+                            height: `${(note.progress - note.tailProgress) * 88}%`,
+                          }}
+                        />
+                      )}
+                      <span
+                        className={[
+                          "rhythm-note",
+                          note.dual && "is-dual",
+                          note.duration > 0 && "is-slider",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                        style={{ top: `${note.progress * 88}%` }}
+                      />
+                    </span>
+                  ))}
+                {laneBursts[lane.id] > 0 && (
+                  <span className="rhythm-burst" key={laneBursts[lane.id]} aria-hidden="true" />
+                )}
+                <button
+                  type="button"
+                  className="rhythm-tap-target"
+                  aria-label={`Tap ${lane.name} lane, key ${lane.key}`}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    setLanePressed(lane.id, true);
+                    pressLane(lane.id);
+                  }}
+                  onPointerUp={() => {
+                    setLanePressed(lane.id, false);
+                    releaseLane(lane.id);
+                  }}
+                  onPointerLeave={() => {
+                    setLanePressed(lane.id, false);
+                    releaseLane(lane.id);
+                  }}
+                >
+                  <span>{lane.key}</span>
+                </button>
+                <span className="rhythm-lane-label">
+                  <kbd>{lane.key}</kbd> {lane.name}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {mode === "playing" && (
+            <div className="rhythm-hud" aria-hidden="true">
+              <span className="rhythm-multiplier">×{multiplier}</span>
+              {countdown !== null ? (
+                <span className="rhythm-countdown" key={`count-${countdown}`}>
+                  {countdown}
+                </span>
+              ) : (
+                judgement && (
+                  <span className={`rhythm-judgement is-${judgement.kind}`} key={judgement.id}>
+                    {judgementLabels[judgement.kind]}
+                  </span>
+                )
+              )}
+              {streak >= 2 && (
+                <span className="rhythm-combo" key={`combo-${streak}`}>
+                  <strong>{streak}</strong>
+                  COMBO
+                </span>
+              )}
             </div>
           )}
-          <span className="rhythm-feedback" aria-live="polite">{feedback}</span>
+
+          {mode !== "playing" && (
+            <div className="rhythm-board-overlay">
+              {mode === "finished" ? (
+                <div className="rhythm-results">
+                  <span className={`rhythm-grade grade-${grade}`}>{grade}</span>
+                  <p className="rhythm-results-score">{score.toLocaleString()}</p>
+                  <dl>
+                    {(Object.keys(judgementLabels) as Judgement[]).map((kind) => (
+                      <div key={kind} className={`is-${kind}`}>
+                        <dt>{judgementLabels[kind]}</dt>
+                        <dd>{counts[kind]}</dd>
+                      </div>
+                    ))}
+                    <div>
+                      <dt>MAX COMBO</dt>
+                      <dd>{bestStreak}</dd>
+                    </div>
+                  </dl>
+                </div>
+              ) : (
+                <>
+                  <span className="rhythm-board-overlay-icon" aria-hidden="true">
+                    {mode === "composing" ? "◌" : "♫"}
+                  </span>
+                  <p>
+                    {mode === "composing"
+                      ? moodProfile
+                        ? moodProfile.thinkingPhrases[phraseIndex]
+                        : "Writing something fresh…"
+                      : "Your stage is waiting"}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+          {mode !== "playing" && (
+            <span className="rhythm-feedback" aria-live="polite">
+              {mode === "finished" ? `Track complete. ${gradeMessages[grade]}` : feedback}
+            </span>
+          )}
         </div>
 
         <div className="rhythm-controls">
@@ -522,8 +896,10 @@ export default function RhythmGame() {
 
         {error && <p className="rhythm-error" role="alert">{error}</p>}
         <p className="rhythm-instructions">
-          Hit each falling note as it reaches the line. Use <kbd>D</kbd> <kbd>F</kbd> <kbd>J</kbd>{" "}
-          <kbd>K</kbd> or tap the lane buttons. Sound is synthesized in your browser; headphones recommended.
+          Hit each note as it reaches the glowing line at the bottom of the highway. Use <kbd>D</kbd> <kbd>F</kbd> <kbd>J</kbd>{" "}
+          <kbd>K</kbd> or tap the lane buttons. Hold the key through green HOLD notes until their trail ends, and hit gold
+          dual notes joined by a white line together; both are worth double. Sound is synthesized in your browser; headphones
+          recommended.
         </p>
       </section>
 
@@ -539,4 +915,76 @@ function closeAudioContext(context: AudioContext) {
   void context.close().catch((closeError: unknown) => {
     console.error("Could not close rhythm game audio.", closeError);
   });
+}
+
+type MoodWrappedProps = {
+  mood: GitHubMoodProfile;
+  hasTrack: boolean;
+  disabled: boolean;
+  onGenerate: () => void;
+};
+
+// Spotify Wrapped-style deck: one GitHub stat per card, ending on the coding mood that sets the beat
+function MoodWrapped({ mood, hasTrack, disabled, onGenerate }: MoodWrappedProps) {
+  const [index, setIndex] = useState(0);
+  const lastIndex = mood.cards.length - 1;
+  const card = mood.cards[Math.min(index, lastIndex)];
+
+  // Auto-advance like a story, stopping on the final mood card
+  useEffect(() => {
+    if (index >= lastIndex) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setTimeout(() => setIndex((current) => current + 1), 4200);
+    return () => window.clearTimeout(timer);
+  }, [index, lastIndex]);
+
+  return (
+    <section className={`rhythm-wrapped tone-${index % 4}`} aria-label={`Your GitHub mood, @${mood.login}`}>
+      <div className="rhythm-wrapped-progress" aria-hidden="true">
+        {mood.cards.map((item, cardIndex) => (
+          <span
+            key={item.kicker}
+            className={cardIndex < index ? "is-done" : cardIndex === index ? "is-active" : ""}
+          />
+        ))}
+      </div>
+
+      <p className="rhythm-wrapped-brand">@{mood.login} · YOUR GITHUB, WRAPPED</p>
+      <div className="rhythm-wrapped-card" key={index} aria-live="polite">
+        <p className="rhythm-wrapped-kicker">{card.kicker}</p>
+        <strong className="rhythm-wrapped-stat">{card.stat}</strong>
+        <p className="rhythm-wrapped-line">{card.line}</p>
+      </div>
+
+      <div className="rhythm-wrapped-actions">
+        <button
+          type="button"
+          className="rhythm-wrapped-nav"
+          aria-label="Previous card"
+          disabled={index === 0}
+          onClick={() => setIndex((current) => Math.max(0, current - 1))}
+        >
+          ‹
+        </button>
+        {index < lastIndex ? (
+          <button type="button" className="rhythm-wrapped-skip" onClick={() => setIndex(lastIndex)}>
+            Skip to my mood
+          </button>
+        ) : (
+          <button type="button" className="rhythm-wrapped-cta" disabled={disabled} onClick={onGenerate}>
+            {hasTrack ? "↻ Remix my mood" : "♫ Generate my beat"}
+          </button>
+        )}
+        <button
+          type="button"
+          className="rhythm-wrapped-nav"
+          aria-label="Next card"
+          disabled={index >= lastIndex}
+          onClick={() => setIndex((current) => Math.min(lastIndex, current + 1))}
+        >
+          ›
+        </button>
+      </div>
+    </section>
+  );
 }
