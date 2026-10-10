@@ -5517,9 +5517,11 @@ a.draft-btn {
   position: relative;
   display: flex;
   height: 370px;
+  min-height: 320px;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 50% -20%, rgba(216, 164, 95, 0.12), transparent 55%),
+    radial-gradient(ellipse at 50% -20%, rgba(216, 164, 95, 0.2), transparent 55%),
+    repeating-linear-gradient(90deg, transparent 0, transparent calc(25% - 1px), var(--rr-divider) calc(25% - 1px), var(--rr-divider) 25%),
     var(--rr-card-soft);
 }
 
@@ -5620,7 +5622,7 @@ a.draft-btn {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: color-mix(in srgb, var(--panel-bg) 76%, transparent);
+  background: color-mix(in srgb, var(--panel-bg) 62%, transparent);
   backdrop-filter: blur(3px);
   pointer-events: none;
 }
