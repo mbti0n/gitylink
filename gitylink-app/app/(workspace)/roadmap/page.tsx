@@ -74,19 +74,19 @@ export default function CareerRoadmapPage() {
     <section className="content-panel">
       <Topbar crumb="Career roadmap" />
 
-      <main className="roadmap-page">
-        <div className="hero-row">
-          <div>
+      <div className="page-content">
+        <div className="page-heading">
+          <div className="page-intro">
             <p className="eyebrow">Growth plan</p>
             <h1>Career roadmap</h1>
             <p>Turn your momentum into a clear path toward the next role you want.</p>
           </div>
           <button type="button" className="btn btn-primary">
-            + Add milestone
+            +  Add milestone
           </button>
         </div>
 
-        <div className="stats-grid roadmap-stats">
+        <div className="kpi-grid">
           {roadmapMetrics.map((metric) => (
             <article key={metric.label} className={`stat-card tone-${metric.tone}`}>
               <div className="metric-icon">{metric.icon}</div>
@@ -98,7 +98,7 @@ export default function CareerRoadmapPage() {
 
         <div className="roadmap-layout">
           <div className="panel roadmap-panel">
-            <div className="panel-header panel-header-split">
+            <div className="panel-header">
               <div>
                 <span className="section-label">Milestones</span>
                 <h2>Career progression</h2>
@@ -151,7 +151,7 @@ export default function CareerRoadmapPage() {
             ))}
           </aside>
         </div>
-      </main>
+      </div>
     </section>
   );
 }
