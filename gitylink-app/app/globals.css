@@ -3085,6 +3085,8 @@ a.draft-btn {
   --rr-heat-2: #a9cba4;
   --rr-heat-3: #78a978;
   --rr-heat-4: #4e855f;
+  --cat-ink: #20242c;
+  --cat-paper: #fffaf5;
   color-scheme: light;
   background:
     radial-gradient(ellipse at 76% 3%, var(--rr-page-glow), transparent 30%),
@@ -3139,6 +3141,8 @@ a.draft-btn {
   --rr-heat-2: #a94d22;
   --rr-heat-3: #dc6a34;
   --rr-heat-4: #f7a06a;
+  --cat-ink: #fff4e8;
+  --cat-paper: #171b22;
   color-scheme: dark;
 }
 
@@ -3151,6 +3155,32 @@ a.draft-btn {
   background: #df674b;
   color: #fff8e9;
   box-shadow: inset 0 -3px 10px rgba(105, 38, 24, 0.16);
+}
+
+/* Logo tile: public/logo-light.svg and logo-dark.svg swap with the theme */
+.record-store .brand-logo {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border-radius: 13px;
+  background: transparent;
+  box-shadow: 0 0 0 1px var(--panel-border);
+}
+
+.brand-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.brand-logo .brand-logo-dark,
+:root[data-theme="dark"] .brand-logo .brand-logo-light {
+  display: none;
+}
+
+:root[data-theme="dark"] .brand-logo .brand-logo-dark {
+  display: block;
 }
 
 .record-store .brand-subtitle {
@@ -4429,6 +4459,115 @@ a.draft-btn {
   background: repeating-radial-gradient(circle, #343a33 0 3px, #292f2a 4px 7px);
   color: #f4ca85;
   animation: cover-spin 3s linear infinite;
+}
+
+/* Commit to the Beat cat (components/BeatCat.tsx) */
+.beat-cat {
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+
+.beat-cat .c-ink { fill: var(--cat-ink); }
+.beat-cat .c-paper { fill: var(--cat-paper); }
+.beat-cat .c-accent { fill: #f57832; }
+.beat-cat .s-ink { stroke: var(--cat-ink); }
+.beat-cat .s-paper { stroke: var(--cat-paper); }
+.beat-cat .s-accent { stroke: #f57832; }
+
+.beat-cat-head {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.beat-cat-listening .beat-cat-head {
+  animation: cat-bob 0.9s ease-in-out infinite;
+}
+
+.beat-cat-confused .beat-cat-head {
+  transform: rotate(-7deg);
+}
+
+.beat-cat-question {
+  font: 700 66px Georgia, "Times New Roman", serif;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: cat-wonder 2.4s ease-in-out infinite;
+}
+
+/* Excited: head bounces and the sparkles twinkle in turn */
+.beat-cat-excited .beat-cat-head {
+  animation: cat-bounce 0.8s ease-in-out infinite;
+}
+
+.beat-cat-sparkle {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: cat-twinkle 1.6s ease-in-out infinite;
+}
+
+.beat-cat-sparkle:nth-of-type(2) {
+  animation-delay: 0.5s;
+}
+
+.beat-cat-sparkle:nth-of-type(3) {
+  animation-delay: 1s;
+}
+
+@keyframes cat-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-9px) rotate(-3deg); }
+  60% { transform: translateY(0) rotate(2deg); }
+}
+
+@keyframes cat-twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.6); }
+}
+
+/* While a page loads, the confused cat slowly tilts its head back and forth */
+.record-overview-loading .beat-cat-confused .beat-cat-head {
+  animation: cat-ponder 2.4s ease-in-out infinite;
+}
+
+@keyframes cat-ponder {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@keyframes cat-bob {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+
+@keyframes cat-wonder {
+  0%, 100% { transform: translateY(0) rotate(8deg); }
+  50% { transform: translateY(-6px) rotate(16deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beat-cat-listening .beat-cat-head,
+  .record-overview-loading .beat-cat-confused .beat-cat-head,
+  .beat-cat-excited .beat-cat-head,
+  .beat-cat-sparkle,
+  .beat-cat-question {
+    animation: none;
+  }
+}
+
+.record-overview-loading .beat-cat {
+  width: 112px;
+  height: 112px;
+}
+
+.record-empty .beat-cat {
+  width: 120px;
+  height: 120px;
+}
+
+.record-first-listen .beat-cat {
+  width: 76px;
+  height: 76px;
 }
 
 .record-overview-loading p {

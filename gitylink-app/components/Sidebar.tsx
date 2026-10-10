@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Suspense } from "react";
 import { getGitHubInitials, getGitHubProfile } from "@/lib/github-profile";
 import SidebarNav from "./SidebarNav";
@@ -7,7 +8,11 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="brand-wrap">
-        <div className="brand-mark">♫</div>
+        {/* Both logos render; CSS shows the one matching <html data-theme> */}
+        <div className="brand-mark brand-logo">
+          <Image className="brand-logo-light" src="/logo-light.svg" alt="" width={52} height={52} priority />
+          <Image className="brand-logo-dark" src="/logo-dark.svg" alt="" width={52} height={52} priority />
+        </div>
         <div className="brand-text">
           <span className="brand-title">Repo Radio</span>
           <span className="brand-subtitle">your code, on wax</span>

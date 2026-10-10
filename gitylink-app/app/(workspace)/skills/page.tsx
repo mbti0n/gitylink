@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import BeatCat from "@/components/BeatCat";
 import { getGitHubRepositories } from "@/lib/github-repositories";
 import SpotifySuggestions from "./SpotifySuggestions";
 
@@ -99,7 +100,7 @@ async function SongsFromGitHub() {
 
       {repositories === null ? (
         <div className="record-empty">
-          <span className="empty-record" aria-hidden="true">♫</span>
+          <BeatCat mood="confused" />
           <h2>Connect GitHub to hear your setlist</h2>
           <p>Your repository languages will become tracks in your skills collection.</p>
           <Link href="/" className="record-button record-button-primary">
@@ -108,7 +109,7 @@ async function SongsFromGitHub() {
         </div>
       ) : tracks.length === 0 ? (
         <div className="record-empty">
-          <span className="empty-record" aria-hidden="true">♫</span>
+          <BeatCat mood="confused" />
           <h2>No tracks in this setlist yet</h2>
           <p>Add primary languages to your repositories and they’ll show up here.</p>
           <Link href="/repositories" className="record-button record-button-primary">
@@ -194,7 +195,7 @@ async function SongsFromGitHub() {
 function SongsLoading() {
   return (
     <div className="record-page record-overview-loading" aria-label="Loading your setlist">
-      <span className="record-loading-disc" aria-hidden="true">♫</span>
+      <BeatCat mood="confused" />
       <p>Counting in…</p>
     </div>
   );

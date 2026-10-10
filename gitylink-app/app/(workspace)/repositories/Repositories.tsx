@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import BeatCat from "@/components/BeatCat";
 import RepositoryAlbumArt from "@/components/RepositoryAlbumArt";
 import type { GitHubRepository } from "@/lib/github-repositories";
 
@@ -130,13 +131,13 @@ export default function Repositories({
 
       {repositories === null ? (
         <div className="record-empty">
-          <span className="empty-record" aria-hidden="true">◉</span>
+          <BeatCat mood="confused" />
           <h2>Your shelf is waiting for GitHub</h2>
           <p>Connect your account on the overview page to bring your repositories into rotation.</p>
         </div>
       ) : filteredRepositories.length === 0 ? (
         <div className="record-empty">
-          <span className="empty-record" aria-hidden="true">◌</span>
+          <BeatCat mood="confused" />
           <h2>{query ? "No albums found" : "Nothing on the shelf yet"}</h2>
           <p>{query ? "Try a different search." : "Public repositories you own will show up here."}</p>
         </div>
